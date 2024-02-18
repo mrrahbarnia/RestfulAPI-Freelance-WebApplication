@@ -1,0 +1,23 @@
+FROM python:3.12.2-alpine3.19
+LABEL maintainer="mrrahbarnia@gmail.com"
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN mkdir app
+WORKDIR /app
+
+COPY ./requirements/local.txt /tmp/local.txt
+COPY ./requirements/base.txt /tmp/base.txt
+COPY ./app /app
+
+RUN python -m venv /py && \
+    /py/bin/pip install --upgrade pip && \
+    /py/bin/pip install --no-cache-dir -r /tmp/local.txt && \
+    rm -rf /tmp && \
+    adduser \
+      --disabled-password \
+      --no-create-home \
+      mohammadreza
+
+USER mohammadreza
