@@ -35,14 +35,6 @@ def special_character_validator(password):
             code='password_must_include_special_char'
         )
 
-def email_validator(email):
-    regex = re.compile('/^\S+@\S+\.\S+$/')
-    if regex.search(email) == None:
-        raise ValidationError(
-            _('The email format is not correct.'),
-            code='email_format_is_not_correct'
-        )
-
 def profile_image_size_validator(file):
     """Validating profile image size to be less than 5MB."""
     max_size_mb = settings.MAX_PROFILE_IMAG_SIZE_MB

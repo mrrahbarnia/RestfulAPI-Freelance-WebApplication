@@ -10,14 +10,13 @@ from django.contrib.auth.base_user import (
 
 from app.timestamp import TimeStamp
 from .validators import (
-    email_validator,
     profile_image_size_validator,
     age_validator
 )
 
 def profile_img_path(instance, file_name):
     """Generating unique path for profile images."""
-    ext = os.path.splitext()[1]
+    ext = os.path.splitext(file_name)[1]
     unique_name = f'{uuid.uuid4()}{ext}'
 
     return os.path.join('uploads', 'profile', unique_name)
@@ -95,7 +94,10 @@ class Profile(models.Model):
     user = models.OneToOneField(
         BaseUser, on_delete=models.CASCADE, related_name='profile'
     )
-    email = models.CharField(validators=[email_validator], max_length=50)
+    email = models.EmailField(
+        verbose_name='email address',
+        null=True, blank=True
+    )
     bio = models.CharField(max_length=1000, null=True, blank=True)
     image = models.ImageField(
         validators=[profile_image_size_validator],
