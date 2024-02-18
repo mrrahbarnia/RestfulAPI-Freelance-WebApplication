@@ -7,7 +7,7 @@ from users.models import BaseUser
 User = get_user_model()
 
 
-class TestModels(TestCase):
+class TestUserModels(TestCase):
 
     def test_create_user_successfully(self):
         User.objects.create_user(
