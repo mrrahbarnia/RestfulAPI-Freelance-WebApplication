@@ -32,6 +32,11 @@ LOCAL_APPS = [
     'users.apps.UsersConfig'
 ]
 
+THIRD_PARTY_APP = [
+    'rest_framework',
+    'drf_spectacular'
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,7 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    *LOCAL_APPS
+    *LOCAL_APPS,
+    *THIRD_PARTY_APP
 ]
 
 MIDDLEWARE = [
@@ -128,3 +134,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.BaseUser'
+
+REST_FRAMEWORK = {
+    # YOUR SETTINGS
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
