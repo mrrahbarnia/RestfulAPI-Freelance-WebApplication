@@ -34,7 +34,9 @@ LOCAL_APPS = [
 
 THIRD_PARTY_APP = [
     'rest_framework',
-    'drf_spectacular'
+    'drf_spectacular',
+    'rest_framework_simplejwt',
+
 ]
 
 # Application definition
@@ -138,4 +140,10 @@ AUTH_USER_MODEL = 'users.BaseUser'
 REST_FRAMEWORK = {
     # YOUR SETTINGS
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
 }
+
+# Validating profile images size
+MAX_PROFILE_IMAG_SIZE_MB = 5

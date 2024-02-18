@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import (
@@ -6,6 +9,18 @@ from django.contrib.auth.base_user import (
 )
 
 from app.timestamp import TimeStamp
+from .validators import (
+    email_validator,
+    profile_image_size_validator,
+    age_validator
+)
+
+def profile_img_path(instance, file_name):
+    """Generating unique path for profile images."""
+    ext = os.path.splitext()[1]
+    unique_name = f'{uuid.uuid4()}{ext}'
+
+    return os.path.join('uploads', 'profile', unique_name)
 
 
 class BaseUserManager(BUM):
@@ -74,3 +89,24 @@ class BaseUser(TimeStamp, AbstractBaseUser, PermissionsMixin):
 
     def is_staff(self):
         return self.is_admin
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(
+        BaseUser, on_delete=models.CASCADE, related_name='profile'
+    )
+    email = models.CharField(validators=[email_validator], max_length=50)
+    bio = models.CharField(max_length=1000, null=True, blank=True)
+    image = models.ImageField(
+        validators=[profile_image_size_validator],
+        upload_to=profile_img_path, null=True, blank=True
+    )
+    age = models.PositiveIntegerField(
+        validators=[age_validator], null=True, blank=True
+    )
+
+    def __str__(self) -> str:
+        return self.user.phone_number
+
+
+# TODO:class Skill(models.Model)
