@@ -144,3 +144,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+# Validating profile images size
+MAX_PROFILE_IMAG_SIZE_MB = 5
