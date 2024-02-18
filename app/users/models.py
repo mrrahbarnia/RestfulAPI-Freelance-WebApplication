@@ -66,7 +66,7 @@ class BaseUser(TimeStamp, AbstractBaseUser, PermissionsMixin):
 
         if len(self.phone_number) != 11:
             raise ValidationError(
-                'The phone number must exactly be 11 digits.'
+                'The length of phone number must be exact 11 digits.'
             )
 
     def __str__(self) -> str:
