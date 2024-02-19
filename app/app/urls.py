@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.conf import settings
 from django.urls import (
     path,
     include
@@ -15,5 +16,9 @@ urlpatterns = [
     # Spectacular URL's
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-
 ]
+
+if settings.DEBUG:
+    urlpatterns.append(
+        path("__debug__/", include("debug_toolbar.urls"))
+    )

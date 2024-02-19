@@ -11,6 +11,10 @@ app_name = 'users'
 
 urlpatterns = [
     path('registration/', apis.RegistrationApiView.as_view(), name='registration'),
+
+    path('profile/me/', apis.ProfileMeApiView.as_view(), name='profile-me'),
+
+    # ============ JWT URL's ============
     path('jwt/login/', TokenObtainPairView.as_view()),
     path('jwt/refresh/', TokenRefreshView.as_view()),
     path('jwt/verify/', TokenVerifyView.as_view())

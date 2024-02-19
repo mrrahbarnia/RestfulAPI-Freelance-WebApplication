@@ -2,15 +2,22 @@ from django.core.validators import MinLengthValidator
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework import serializers
 from rest_framework.exceptions import APIException
+from rest_framework import (
+    serializers,
+    permissions
+)
 from drf_spectacular.utils import extend_schema
 
+from core.selectors.users import (
+    get_profile
+)
 from core.services.users import (
     register
 )
 from .models import (
-    BaseUser
+    BaseUser,
+    Profile
 )
 from .validators import (
     phone_validator,
@@ -85,4 +92,29 @@ class RegistrationApiView(APIView):
             )
 
         response = self.OutputRegisterSerializer(logic).data
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class ProfileMeApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    class OutPutProfileMeSerializer(serializers.ModelSerializer):
+        
+        class Meta:
+            model = Profile
+            fields = (
+                'email', 'bio', 'image', 'age', 'plan_type',
+                'balance', 'score', 'sex', 'city', 'views'
+            )
+
+    def get(self, request, *args, **kwargs):
+        try:
+            profile = get_profile(user=request.user)
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+        response = self.OutPutProfileMeSerializer(profile).data
+
         return Response(response, status=status.HTTP_200_OK)
