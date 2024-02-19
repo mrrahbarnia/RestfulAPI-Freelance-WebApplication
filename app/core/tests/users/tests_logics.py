@@ -5,6 +5,7 @@ from users.models import (
     BaseUser,
     Profile
 )
+from ...selectors.users import get_profile
 from ...services.users import register
 
 
@@ -31,3 +32,14 @@ class TestUserServices(TestCase):
             register(
                 phone_number=phone_number, email=None, password=password
             )
+
+    def test_get_profile(self):
+        phone_number = '09131111111'
+        password = '1234@example.com'
+
+        user = register(
+            phone_number=phone_number, email=None, password=password
+        )
+
+        profile_obj = get_profile(user=user)
+        self.assertEqual(profile_obj.user.phone_number, phone_number)

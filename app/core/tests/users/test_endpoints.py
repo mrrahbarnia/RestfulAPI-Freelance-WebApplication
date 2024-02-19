@@ -7,11 +7,14 @@ from users.models import (
     BaseUser,
     Profile
 )
+from ...services.users import register
 
 REGISTRATION_URL = reverse('users:registration')
+GET_PROFILE_URL = reverse('users:profile-me')
 
 
-class TestUserEndpoints(TestCase):
+class TestPublicUserEndpoints(TestCase):
+    """Test endpoints without authentication."""
 
     def setUp(self) -> None:
         self.client = APIClient()
@@ -52,3 +55,26 @@ class TestUserEndpoints(TestCase):
                 phone_number=payload['phone_number']
             ).exists()
         )
+    
+    def test_retrieve_profile_successfully(self):
+        response = self.client.get(GET_PROFILE_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TestPrivateUserEndpoints(TestCase):
+    """Test endpoints wit authentication."""
+
+    def setUp(self) -> None:
+        self.client = APIClient()
+        phone_number = '09131111111'
+        password = '1234@example.com'
+        user_obj = register(
+            phone_number=phone_number, email=None, password=password
+        )
+        self.client.force_authenticate(user_obj)
+        
+    def test_retrieve_profile_successfully(self):
+        response = self.client.get(GET_PROFILE_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
