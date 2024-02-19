@@ -14,6 +14,10 @@ from .validators import (
     age_validator
 )
 
+def generate_uuid():
+    """Generating uuid for using in profile_detail url."""
+    return str(uuid.uuid4()).split('-')[0]
+
 def profile_img_path(instance, file_name):
     """Generating unique path for profile images."""
     ext = os.path.splitext(file_name)[1]
@@ -128,6 +132,7 @@ class Profile(models.Model):
     sex = models.CharField(max_length=2, choices=SEX, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
+    uuid = models.CharField(max_length=None, default=generate_uuid)
 
     def __str__(self) -> str:
         return self.user.phone_number
