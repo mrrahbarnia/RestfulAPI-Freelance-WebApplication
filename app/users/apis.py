@@ -27,6 +27,7 @@ class RegistrationApiView(APIView):
         phone_number = serializers.CharField(
             validators = [phone_validator]
         )
+        email = serializers.EmailField(required=False)
         password = serializers.CharField(
             validators=[
                 MinLengthValidator(limit_value=8),
@@ -75,6 +76,7 @@ class RegistrationApiView(APIView):
         try:
             logic = register(
                 phone_number=serializer.validated_data.get('phone_number'),
+                email=serializer.validated_data.get('email'),
                 password=serializer.validated_data.get('password')
             )
         except Exception as ex:
