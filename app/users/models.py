@@ -89,6 +89,18 @@ class BaseUser(TimeStamp, AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.is_admin
 
+PLAN_CHOICES = [
+    ('FREE', 'Free'),
+    ('BRONZE', 'Bronze'),
+    ('SILVER', 'Silver'),
+    ('GOLD', 'Gold')
+]
+
+SEX = [
+    ('M', 'Male'),
+    ('F', 'Female')
+]
+
 
 class Profile(models.Model):
     user = models.OneToOneField(
@@ -106,9 +118,22 @@ class Profile(models.Model):
     age = models.PositiveIntegerField(
         validators=[age_validator], null=True, blank=True
     )
+    plan_type = models.CharField(
+        max_length=6, choices=PLAN_CHOICES, default='FREE'
+    )
+    balance = models.DecimalField(
+        max_digits=20, decimal_places=3, default=0
+    )
+    score = models.PositiveIntegerField(default=0)
+    sex = models.CharField(max_length=2, choices=SEX, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    views = models.PositiveIntegerField(default=0)
 
     def __str__(self) -> str:
         return self.user.phone_number
 
 
+# TODO:class Portfolio(models.Model)
+# TODO:class Comment(models.Model)
+# TODO:class Follow(models.Model)
 # TODO:class Skill(models.Model)
