@@ -13,7 +13,8 @@ from core.selectors.users import (
     get_profile
 )
 from core.services.users import (
-    register
+    register,
+    update_profile
 )
 from .models import (
     BaseUser,
@@ -99,6 +100,29 @@ class ProfileMeApiView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
 
+    class UpdateProfileSerializer(serializers.Serializer):
+        email = serializers.EmailField(required=False)
+        bio = serializers.CharField(max_length=1000, required=False)
+        image = serializers.ImageField(required=False)
+        age = serializers.IntegerField(required=False)
+        sex = serializers.CharField(max_length=1, required=False)
+        city = serializers.CharField(max_length=100, required=False)
+
+        def validate_sex(self, sex):
+            if sex != 'M' and sex != 'F':
+                raise APIException(
+                    "Sex must be exactly either 'M' or 'F' string."
+                )
+            return sex
+
+        def validate_age(self, age):
+            if age < 1:
+                raise APIException(
+                    'Age must be a positive digit.'
+                )
+            return age
+
+
     class OutPutProfileMeSerializer(serializers.ModelSerializer):
         
         class Meta:
@@ -108,6 +132,7 @@ class ProfileMeApiView(APIView):
                 'balance', 'score', 'sex', 'city', 'views'
             )
 
+    @extend_schema(responses=OutPutProfileMeSerializer)
     def get(self, request, *args, **kwargs):
         try:
             profile = get_profile(user=request.user)
@@ -117,4 +142,29 @@ class ProfileMeApiView(APIView):
             )
         response = self.OutPutProfileMeSerializer(profile).data
 
+        return Response(response, status=status.HTTP_200_OK)
+    
+    @extend_schema(
+            request=UpdateProfileSerializer,
+            responses=OutPutProfileMeSerializer
+    )
+    def patch(self, request, *args, **kwargs):
+        serializer = self.UpdateProfileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            profile = update_profile(
+                user=request.user,
+                email=serializer.validated_data.get('email'),
+                bio=serializer.validated_data.get('bio'),
+                image=serializer.validated_data.get('image'),
+                age=serializer.validated_data.get('age'),
+                sex=serializer.validated_data.get('sex'),
+                city=serializer.validated_data.get('city')
+            )
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+
+        response = self.OutPutProfileMeSerializer(profile).data
         return Response(response, status=status.HTTP_200_OK)

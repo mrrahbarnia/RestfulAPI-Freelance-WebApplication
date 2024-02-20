@@ -24,12 +24,12 @@ def update_profile(
 ) -> Profile:
     profile_obj = Profile.objects.get(user=user)
 
-    profile_obj.email = email
-    profile_obj.bio = bio
-    profile_obj.image = image
-    profile_obj.age = age
-    profile_obj.sex = sex
-    profile_obj.city = city
+    profile_obj.email = email or profile_obj.email
+    profile_obj.bio = bio or profile_obj.bio
+    profile_obj.image = image or profile_obj.image
+    profile_obj.age = age or profile_obj.age
+    profile_obj.sex = sex or profile_obj.sex
+    profile_obj.city = city or profile_obj.city
 
     profile_obj.save()
     return profile_obj

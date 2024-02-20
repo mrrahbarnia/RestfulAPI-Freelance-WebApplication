@@ -93,20 +93,21 @@ class BaseUser(TimeStamp, AbstractBaseUser, PermissionsMixin):
     def is_staff(self):
         return self.is_admin
 
-PLAN_CHOICES = [
+
+class Profile(models.Model):
+
+    PLAN_CHOICES = [
     ('FREE', 'Free'),
     ('BRONZE', 'Bronze'),
     ('SILVER', 'Silver'),
     ('GOLD', 'Gold')
-]
+    ]
 
-SEX = [
-    ('M', 'Male'),
-    ('F', 'Female')
-]
+    SEX = [
+        ('M', 'Male'),
+        ('F', 'Female')
+    ]
 
-
-class Profile(models.Model):
     user = models.OneToOneField(
         BaseUser, on_delete=models.CASCADE, related_name='profile'
     )
