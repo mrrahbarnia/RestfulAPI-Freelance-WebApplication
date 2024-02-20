@@ -60,6 +60,17 @@ class TestPublicUserEndpoints(TestCase):
         response = self.client.get(GET_PROFILE_URL)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_retrieve_detail_profile_with_increasing_views(self):
+        anonymous_user = register(
+            phone_number='09131111111', email=None, password='1234@example.com'
+        )
+
+        url = reverse('users:profile-detail', args=anonymous_user.profile.uuid)
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(anonymous_user.profile.views, 1)
 
 
 class TestPrivateUserEndpoints(TestCase):
