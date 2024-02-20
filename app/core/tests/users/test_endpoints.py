@@ -69,18 +69,22 @@ class TestPrivateUserEndpoints(TestCase):
         self.client = APIClient()
         phone_number = '09131111111'
         password = '1234@example.com'
-        user_obj = register(
+        self.user_obj = register(
             phone_number=phone_number, email=None, password=password
         )
-        self.client.force_authenticate(user_obj)
+        self.client.force_authenticate(self.user_obj)
         
     def test_retrieve_profile_successfully(self):
         response = self.client.get(GET_PROFILE_URL)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
-    # def test_update_profile_successfully(self):
-    #     payload = {
-    #         'email': 'edited@gmail.com',
-    #         'bio': ''
-    #     }
+    def test_partially_update_profile_successfully(self):
+        payload = {
+            'email': 'edited@gmail.com',
+        }
+        response = self.client.patch(GET_PROFILE_URL, payload)
+        self.user_obj.refresh_from_db()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.user_obj.profile.email, payload['email'])
