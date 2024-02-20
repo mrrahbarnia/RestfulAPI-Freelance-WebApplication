@@ -87,6 +87,6 @@ class TestUserServices(TestCase):
         profile_detail(uuid=user.profile.uuid)
 
         self.assertTrue(Profile.objects.filter(
-            uuid=user.profile.uud
+            uuid=user.profile.uuid
         ).exists())
-        self.assertEqual(Profile.objects.all().count())
+        self.assertEqual(Profile.objects.all().count(), 1)

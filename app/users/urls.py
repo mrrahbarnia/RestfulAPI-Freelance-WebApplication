@@ -13,6 +13,7 @@ urlpatterns = [
     path('registration/', apis.RegistrationApiView.as_view(), name='registration'),
 
     path('profile/me/', apis.ProfileMeApiView.as_view(), name='profile-me'),
+    path('profile/<str:uuid>/', apis.ProfileDetailApiView.as_view(), name='profile-detail'),
 
     # ============ JWT URL's ============
     path('jwt/login/', TokenObtainPairView.as_view()),

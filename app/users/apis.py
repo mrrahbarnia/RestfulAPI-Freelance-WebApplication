@@ -10,7 +10,8 @@ from rest_framework import (
 from drf_spectacular.utils import extend_schema
 
 from core.selectors.users import (
-    get_profile
+    get_profile,
+    profile_detail
 )
 from core.services.users import (
     register,
@@ -167,4 +168,28 @@ class ProfileMeApiView(APIView):
             )
 
         response = self.OutPutProfileMeSerializer(profile).data
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class ProfileDetailApiView(APIView):
+
+
+    class OutputProfileDetailSerializer(serializers.ModelSerializer):
+
+        class Meta:
+            model = Profile
+            fields = (
+                'email', 'bio', 'image', 'age', 'plan_type',
+                'score', 'sex', 'city', 'views'
+            )
+    
+    def get(self, request, uuid, *args, **kwargs):
+        try:
+            profile = profile_detail(uuid=uuid)
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+
+        response = self.OutputProfileDetailSerializer(profile).data
         return Response(response, status=status.HTTP_200_OK)
