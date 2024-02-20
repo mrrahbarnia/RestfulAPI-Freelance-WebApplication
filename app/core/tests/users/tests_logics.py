@@ -5,7 +5,10 @@ from users.models import (
     BaseUser,
     Profile
 )
-from ...selectors.users import get_profile
+from ...selectors.users import (
+    get_profile,
+    profile_detail
+)
 from ...services.users import (
     register,
     update_profile
@@ -73,3 +76,17 @@ class TestUserServices(TestCase):
 
         self.assertNotEqual(user.profile.email, email)
         self.assertEqual(user.profile.email, edited_email)
+
+    def test_profile_detail(self):
+        phone_number = '09131111111'
+        password = '1234@example.com'
+        email = 'example@gmail.com'
+        user = register(
+            phone_number=phone_number, email=email, password=password
+        )
+        profile_detail(uuid=user.profile.uuid)
+
+        self.assertTrue(Profile.objects.filter(
+            uuid=user.profile.uud
+        ).exists())
+        self.assertEqual(Profile.objects.all().count())
