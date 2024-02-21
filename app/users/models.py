@@ -143,19 +143,19 @@ class Subscription(TimeStamp):
     follower = models.ForeignKey(
         BaseUser, on_delete=models.CASCADE, related_name='follower'
     )
-    following = models.ForeignKey(
-        BaseUser, on_delete=models.CASCADE, related_name='following'
+    target = models.ForeignKey(
+        BaseUser, on_delete=models.CASCADE, related_name='target'
     )
 
     class Meta:
-        unique_together = ('follower', 'following')
+        unique_together = ('follower', 'target')
 
     def __str__(self) -> str:
-        return f"{self.follower.phone_number} >> {self.following.phone_number}"
+        return f"{self.follower.phone_number} >> {self.target.phone_number}"
     
     def clean(self) -> None:
         from django.core.exceptions import ValidationError
-        if self.follower.id == self.following.id:
+        if self.follower.id == self.target.id:
             raise ValidationError('User Cannot follow himself.')
 
 

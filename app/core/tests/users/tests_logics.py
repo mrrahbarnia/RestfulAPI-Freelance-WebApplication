@@ -11,7 +11,9 @@ from ...selectors.users import (
 from ...services.users import (
     register,
     update_profile,
-    profile_detail
+    profile_detail,
+    subscribe,
+    unsubscribe
 )
 
 
@@ -90,3 +92,27 @@ class TestUserServices(TestCase):
             uuid=user.profile.uuid
         ).exists())
         self.assertEqual(Profile.objects.all().count(), 1)
+
+    def test_subscribe_logic(self):
+        user = register(
+            phone_number='09131111111', email=None, password='1234@example.com'
+        )
+        user1 = register(
+            phone_number='09132222222', email=None, password='1234@example.com'
+        )
+        subscribe(follower=user, target=user1)
+
+        self.assertEqual(user1.target.all(), 1)
+
+    def test_unsubscribe_logic(self):
+        user = register(
+            phone_number='09131111111', email=None, password='1234@example.com'
+        )
+        user1 = register(
+            phone_number='09132222222', email=None, password='1234@example.com'
+        )
+        subscribe(follower=user, target=user1)
+        self.assertEqual(user1.target.all(), 1)
+
+        unsubscribe(un_follower=user, target=user1)
+        self.assertEqual(user1.target.all(), 0)
