@@ -11,11 +11,11 @@ from drf_spectacular.utils import extend_schema
 
 from core.selectors.users import (
     get_profile,
-    profile_detail
 )
 from core.services.users import (
     register,
-    update_profile
+    update_profile,
+    profile_detail
 )
 from .models import (
     BaseUser,

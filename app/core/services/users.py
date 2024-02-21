@@ -38,3 +38,10 @@ def register(*, phone_number:str, email:str, password:str) -> BaseUser:
     user = create_user(phone_number=phone_number, password=password)
     create_profile(user=user, email=email)
     return user
+
+def profile_detail(*, uuid:str) ->Profile:
+    profile = Profile.objects.get(uuid=uuid)
+    profile.views += 1
+    profile.save()
+    # TODO: Caching views for profile views
+    return profile

@@ -139,6 +139,26 @@ class Profile(models.Model):
         return self.user.phone_number
 
 
+class Subscription(TimeStamp):
+    follower = models.ForeignKey(
+        BaseUser, on_delete=models.CASCADE, related_name='follower'
+    )
+    following = models.ForeignKey(
+        BaseUser, on_delete=models.CASCADE, related_name='following'
+    )
+
+    class Meta:
+        unique_together = ('follower', 'following')
+
+    def __str__(self) -> str:
+        return f"{self.follower.phone_number} >> {self.following.phone_number}"
+    
+    def clean(self) -> None:
+        from django.core.exceptions import ValidationError
+        if self.follower.id == self.following.id:
+            raise ValidationError('User Cannot follow himself.')
+
+
 # TODO:class Portfolio(models.Model)
 # TODO:class Comment(models.Model)
 # TODO:class Follow(models.Model)

@@ -7,11 +7,11 @@ from users.models import (
 )
 from ...selectors.users import (
     get_profile,
-    profile_detail
 )
 from ...services.users import (
     register,
-    update_profile
+    update_profile,
+    profile_detail
 )
 
 
