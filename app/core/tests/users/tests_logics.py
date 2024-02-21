@@ -96,21 +96,27 @@ class TestUserServices(TestCase):
         self.assertEqual(user1.target.all().count(), 0)
 
     def test_list_freelancers(self):
-        user1 = register(
+        sample_user_profile = Profile.objects.get(user__phone_number='09131111111')
+        sample_user_profile.score = 120
+        sample_user_profile.save()
+
+        register(
             phone_number='09132222222', email=None, password='1234@example.com'
         )
-        user2 = register(
+        user1_profile = Profile.objects.get(user__phone_number='09132222222')
+        user1_profile.score = 200
+        user1_profile.save()
+
+        register(
             phone_number='09133333333', email=None, password='1234@example.com'
         )
-        self.sample_user.profile.score = 100
-        user1.profile.score = 90
-        user2.profile.score = 120
-        self.sample_user.save()
-        user1.save()
-        user2.save()
+        user2_profile = Profile.objects.get(user__phone_number='09133333333')
+        user2_profile.score = 130
+        user2_profile.save()
 
         freelancers = get_freelancers()
+
         self.assertEqual(len(freelancers), 3)
-        self.assertEqual(freelancers[0], user2.profile)
-        self.assertEqual(freelancers[1], self.sample_user.profile)
-        self.assertEqual(freelancers[2], user1.profile)
+        self.assertEqual(freelancers[0], user1_profile)
+        self.assertEqual(freelancers[1], user2_profile)
+        self.assertEqual(freelancers[2], sample_user_profile)

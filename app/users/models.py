@@ -8,7 +8,7 @@ from django.contrib.auth.base_user import (
     AbstractBaseUser
 )
 
-from app.timestamp import TimeStamp
+from core.timestamp import TimeStamp
 from .validators import (
     profile_image_size_validator,
     age_validator

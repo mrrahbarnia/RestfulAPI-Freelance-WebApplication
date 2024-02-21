@@ -1,4 +1,5 @@
 from django.core.validators import MinLengthValidator
+from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
@@ -9,8 +10,13 @@ from rest_framework import (
 )
 from drf_spectacular.utils import extend_schema
 
+from core.pagination import (
+    LimitOffsetPagination,
+    get_paginated_response_context
+)
 from core.selectors.users import (
     get_profile,
+    get_freelancers
 )
 from core.services.users import (
     register,
@@ -184,7 +190,10 @@ class ProfileDetailApiView(APIView):
                 'email', 'bio', 'image', 'age', 'plan_type',
                 'score', 'sex', 'city', 'views'
             )
-    
+
+    @extend_schema(
+            responses=OutputProfileDetailSerializer
+    )
     def get(self, request, uuid, *args, **kwargs):
         try:
             profile = profile_detail(uuid=uuid)
@@ -221,3 +230,39 @@ class SubscriptionApiView(APIView):
                 f'Database Error >> {ex}'
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ListFreelancersApiView(APIView):
+
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 20
+
+
+    class OutputFreelancersSerializer(serializers.ModelSerializer):
+        absolute_url = serializers.SerializerMethodField()
+        class Meta:
+            model = Profile
+            fields = (
+                'email', 'bio', 'image',
+                'score', 'uuid', 'absolute_url'
+            )
+
+        def get_absolute_url(self, profile):
+            request = self.context.get('request')
+            path = reverse('users:profile_detail', args=[profile.uuid])
+            return request.build_absolute_uri(path)
+
+    @extend_schema(responses=OutputFreelancersSerializer)
+    def get(self, request, *args, **kwargs):
+        try:
+            freelancers = get_freelancers()
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+        response = self.OutputFreelancersSerializer(
+            freelancers, context={'request': request}, many=True
+        ).data
+
+        return Response(response, status=status.HTTP_200_OK)

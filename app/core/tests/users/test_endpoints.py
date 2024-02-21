@@ -13,8 +13,8 @@ from ...services.users import (
 )
 
 REGISTRATION_URL = reverse('users:registration')
-GET_PROFILE_URL = reverse('users:profile-me')
-GET_FREELANCERS_URL = reverse('users:freelancers-list')
+GET_PROFILE_URL = reverse('users:profile_me')
+GET_FREELANCERS_URL = reverse('users:freelancers_list')
 
 
 class TestPublicUserEndpoints(TestCase):
@@ -70,7 +70,7 @@ class TestPublicUserEndpoints(TestCase):
             phone_number='09131111111', email=None, password='1234@example.com'
         )
 
-        url = reverse('users:profile-detail', args=[anonymous_user.profile.uuid])
+        url = reverse('users:profile_detail', args=[anonymous_user.profile.uuid])
         response = self.client.get(url)
         anonymous_user.refresh_from_db()
 
