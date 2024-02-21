@@ -149,3 +149,14 @@ REST_FRAMEWORK = {
 
 # Validating profile images size
 MAX_PROFILE_IMAG_SIZE_MB = 5
+
+# Cache system config
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
