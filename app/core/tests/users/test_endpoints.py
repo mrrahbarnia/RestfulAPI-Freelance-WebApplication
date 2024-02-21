@@ -7,7 +7,10 @@ from users.models import (
     BaseUser,
     Profile
 )
-from ...services.users import register
+from ...services.users import (
+    register,
+    subscribe
+)
 
 REGISTRATION_URL = reverse('users:registration')
 GET_PROFILE_URL = reverse('users:profile-me')
@@ -111,3 +114,15 @@ class TestPrivateUserEndpoints(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(sample_user.target.all().count(), 1)
         self.assertEqual(self.user_obj.follower.all().count(), 1)
+    
+    def test_unsubscribe_endpoint_successfully(self):
+        sample_user = register(
+            phone_number='09131234567', email=None, password='1234@example.com'
+        )
+        subscribe(follower=self.user_obj, target_uuid=sample_user.profile.uuid)
+
+        url = reverse('users:subscription', args=[sample_user.profile.uuid])
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(self.user_obj.target.all().count(), 0)
