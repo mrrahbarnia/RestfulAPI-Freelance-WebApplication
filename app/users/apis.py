@@ -211,4 +211,13 @@ class SubscriptionApiView(APIView):
             )
         return Response(status=status.HTTP_201_CREATED)
 
-    # def delete(self,):
+    def delete(self, request, uuid, *args, **kwargs):
+        try:
+            unsubscribe(
+                un_follower=request.user, target_uuid=uuid
+            )
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
