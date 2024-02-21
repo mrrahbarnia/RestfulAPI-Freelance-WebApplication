@@ -1,10 +1,10 @@
 """
 Layer for users services Business logics.
 """
-from PIL import Image as img
 from users.models import (
     BaseUser,
-    Profile
+    Profile,
+    Subscription
 )
 
 def create_user(*, phone_number:str, password:str) -> BaseUser:
@@ -45,3 +45,12 @@ def profile_detail(*, uuid:str) ->Profile:
     profile.save()
     # TODO: Caching views for profile views
     return profile
+
+def subscribe(*, follower:BaseUser, target:BaseUser) -> Subscription:
+    subscription = Subscription.objects.create(follower=follower, target=target)
+    # TODO:Caching
+    return subscription
+
+def unsubscribe(*, un_follower:BaseUser, target:BaseUser) -> Subscription:
+    Subscription.objects.get(follower=un_follower, target=target).delete()
+    # TODO:Caching

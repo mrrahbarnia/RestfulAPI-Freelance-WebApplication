@@ -102,7 +102,7 @@ class TestUserServices(TestCase):
         )
         subscribe(follower=user, target=user1)
 
-        self.assertEqual(user1.target.all(), 1)
+        self.assertEqual(user1.target.all().count(), 1)
 
     def test_unsubscribe_logic(self):
         user = register(
@@ -112,7 +112,7 @@ class TestUserServices(TestCase):
             phone_number='09132222222', email=None, password='1234@example.com'
         )
         subscribe(follower=user, target=user1)
-        self.assertEqual(user1.target.all(), 1)
+        self.assertEqual(user1.target.all().count(), 1)
 
         unsubscribe(un_follower=user, target=user1)
-        self.assertEqual(user1.target.all(), 0)
+        self.assertEqual(user1.target.all().count(), 0)
