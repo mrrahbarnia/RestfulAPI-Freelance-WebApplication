@@ -14,6 +14,7 @@ urlpatterns = [
 
     path('profile/me/', apis.ProfileMeApiView.as_view(), name='profile-me'),
     path('profile/<str:uuid>/', apis.ProfileDetailApiView.as_view(), name='profile-detail'),
+    path('profile/<str:uuid>/subscription/', apis.SubscriptionApiView.as_view(), name='subscription'),
 
     # ============ JWT URL's ============
     path('jwt/login/', TokenObtainPairView.as_view()),

@@ -15,7 +15,9 @@ from core.selectors.users import (
 from core.services.users import (
     register,
     update_profile,
-    profile_detail
+    profile_detail,
+    subscribe,
+    unsubscribe
 )
 from .models import (
     BaseUser,
@@ -193,3 +195,20 @@ class ProfileDetailApiView(APIView):
 
         response = self.OutputProfileDetailSerializer(profile).data
         return Response(response, status=status.HTTP_200_OK)
+
+
+class SubscriptionApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, uuid, *args, **kwargs):
+        try:
+            subscribe(
+                follower=request.user, target_uuid=uuid
+            )
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_201_CREATED)
+
+    # def delete(self,):

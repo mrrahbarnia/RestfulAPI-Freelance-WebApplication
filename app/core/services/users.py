@@ -1,6 +1,9 @@
 """
 Layer for users services Business logics.
 """
+from django.db import transaction
+from rest_framework.exceptions import APIException
+
 from users.models import (
     BaseUser,
     Profile,
@@ -46,11 +49,42 @@ def profile_detail(*, uuid:str) ->Profile:
     # TODO: Caching views for profile views
     return profile
 
-def subscribe(*, follower:BaseUser, target:BaseUser) -> Subscription:
-    subscription = Subscription.objects.create(follower=follower, target=target)
+def subscribe(*, follower:BaseUser, target_uuid:str) -> Subscription:
+    """
+    Create subscription method by passing two arguments:
+    1 - follower >> User instance of the follower
+    2 - target_uuid     >> The uuid that belongs to target_user
+    """
+    try:
+        target_user = BaseUser.objects.get(profile__uuid=target_uuid)
+    except BaseUser.DoesNotExist:
+        raise APIException(
+            'There is no user with provided uuid.'
+        )
+    subscription = Subscription.objects.create(follower=follower, target=target_user)
     # TODO:Caching
     return subscription
 
-def unsubscribe(*, un_follower:BaseUser, target:BaseUser) -> Subscription:
-    Subscription.objects.get(follower=un_follower, target=target).delete()
+@transaction.atomic
+def unsubscribe(*, un_follower:BaseUser, target_uuid:str) -> Subscription:
+    """
+    Deleting subscription method by passing two arguments:
+    1 - un_follower >> User instance of the follower
+    2 - target_uuid        >> The uuid that belongs to target_user
+    """
+    try:
+        target_user = BaseUser.objects.get(profile__uuid=target_uuid)
+    except BaseUser.DoesNotExist:
+        raise APIException(
+            'There is no user with provided uuid.'
+        )
+    try:
+        subscription = Subscription.objects.get(
+            follower=un_follower, target=target_user
+        )
+    except Subscription.DoesNotExist:
+        raise APIException(
+            'The target user has not already been followed.'
+        )
+    subscription.delete()
     # TODO:Caching

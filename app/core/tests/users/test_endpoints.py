@@ -103,12 +103,11 @@ class TestPrivateUserEndpoints(TestCase):
     
     def test_subscribe_endpoint_successfully(self):
         sample_user = register(
-            phone_number='09131111111', email=None, password='1234@example.com'
+            phone_number='09131234567', email=None, password='1234@example.com'
         )
-        url = reverse('users:subscribe', args=[sample_user.profile.uuid])
+        url = reverse('users:subscription', args=[sample_user.profile.uuid])
         response = self.client.get(url)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(sample_user.target.all().count(), 1)
-        self.assertEqual(self.client.follower.all().count(), 1)
-
+        self.assertEqual(self.user_obj.follower.all().count(), 1)

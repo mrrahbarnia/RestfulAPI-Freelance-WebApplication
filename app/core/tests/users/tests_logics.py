@@ -100,7 +100,7 @@ class TestUserServices(TestCase):
         user1 = register(
             phone_number='09132222222', email=None, password='1234@example.com'
         )
-        subscribe(follower=user, target=user1)
+        subscribe(follower=user, target_uuid=user1.profile.uuid)
 
         self.assertEqual(user1.target.all().count(), 1)
 
@@ -111,8 +111,8 @@ class TestUserServices(TestCase):
         user1 = register(
             phone_number='09132222222', email=None, password='1234@example.com'
         )
-        subscribe(follower=user, target=user1)
+        subscribe(follower=user, target_uuid=user1.profile.uuid)
         self.assertEqual(user1.target.all().count(), 1)
 
-        unsubscribe(un_follower=user, target=user1)
+        unsubscribe(un_follower=user, target_uuid=user1.profile.uuid)
         self.assertEqual(user1.target.all().count(), 0)
