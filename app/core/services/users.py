@@ -61,7 +61,9 @@ def subscribe(*, follower:BaseUser, target_uuid:str) -> Subscription:
         raise APIException(
             'There is no user with provided uuid.'
         )
-    subscription = Subscription.objects.create(follower=follower, target=target_user)
+    subscription = Subscription(follower=follower, target=target_user)
+    subscription.full_clean()
+    subscription.save()
     # TODO:Caching
     return subscription
 

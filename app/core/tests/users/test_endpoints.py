@@ -14,6 +14,7 @@ from ...services.users import (
 
 REGISTRATION_URL = reverse('users:registration')
 GET_PROFILE_URL = reverse('users:profile-me')
+GET_FREELANCERS_URL = reverse('users:freelancers-list')
 
 
 class TestPublicUserEndpoints(TestCase):
@@ -75,6 +76,11 @@ class TestPublicUserEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(anonymous_user.profile.views, 1)
+    
+    def test_get_freelancers_list_url(self):
+        response = self.client.get(GET_FREELANCERS_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestPrivateUserEndpoints(TestCase):
@@ -126,3 +132,4 @@ class TestPrivateUserEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(self.user_obj.target.all().count(), 0)
+
