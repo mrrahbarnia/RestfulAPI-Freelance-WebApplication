@@ -14,7 +14,7 @@ GET_PROFILE_URL = reverse('users:profile-me')
 
 
 class TestPublicUserEndpoints(TestCase):
-    """Test endpoints without authentication."""
+    """Test endpoints wit unauthenticated client."""
 
     def setUp(self) -> None:
         self.client = APIClient()
@@ -75,7 +75,7 @@ class TestPublicUserEndpoints(TestCase):
 
 
 class TestPrivateUserEndpoints(TestCase):
-    """Test endpoints wit authentication."""
+    """Test endpoints with authenticated client."""
 
     def setUp(self) -> None:
         self.client = APIClient()
@@ -100,3 +100,15 @@ class TestPrivateUserEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(self.user_obj.profile.email, payload['email'])
+    
+    def test_subscribe_endpoint_successfully(self):
+        sample_user = register(
+            phone_number='09131111111', email=None, password='1234@example.com'
+        )
+        url = reverse('users:subscribe', args=[sample_user.profile.uuid])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(sample_user.target.all().count(), 1)
+        self.assertEqual(self.client.follower.all().count(), 1)
+
