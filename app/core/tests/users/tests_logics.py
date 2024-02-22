@@ -8,6 +8,8 @@ from users.models import (
 from ...selectors.users import (
     get_profile,
     get_freelancers,
+    my_followers,
+    my_followings
 )
 from ...services.users import (
     register,
@@ -120,3 +122,29 @@ class TestUserServices(TestCase):
         self.assertEqual(freelancers[0], user1_profile)
         self.assertEqual(freelancers[1], user2_profile)
         self.assertEqual(freelancers[2], sample_user_profile)
+
+    def test_my_followers_logic(self):
+        user1 = register(
+            phone_number='09133333333', email=None, password='1234@example.com'
+        )
+        user2 = register(
+            phone_number='09133333333', email=None, password='1234@example.com'
+        )
+        subscribe(follower=user1, target_uuid=self.sample_user.profile.uuid)
+        subscribe(follower=user2, target_uuid=self.sample_user.profile.uuid)
+        queryset = my_followers(user=self.sample_user)
+
+        self.assertEqual(len(queryset), 2)
+
+    def test_my_followings_logic(self):
+        user1 = register(
+            phone_number='09133333333', email=None, password='1234@example.com'
+        )
+        user2 = register(
+            phone_number='09133333333', email=None, password='1234@example.com'
+        )
+        subscribe(follower=self.sample_user, target_uuid=user1.profile.uuid)
+        subscribe(follower=self.sample_user, target_uuid=user2.profile.uuid)
+        queryset = my_followings(user=self.sample_user)
+
+        self.assertEqual(len(queryset), 2)
