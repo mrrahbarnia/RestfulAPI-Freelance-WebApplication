@@ -109,7 +109,7 @@ class Profile(models.Model):
     ]
 
     user = models.OneToOneField(
-        BaseUser, on_delete=models.CASCADE, related_name='profile'
+        BaseUser, on_delete=models.CASCADE, related_name='profile', db_index=True
     )
     email = models.EmailField(
         verbose_name='email address',
@@ -133,7 +133,7 @@ class Profile(models.Model):
     sex = models.CharField(max_length=2, choices=SEX, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
-    uuid = models.CharField(max_length=None, default=generate_uuid)
+    uuid = models.CharField(max_length=None, default=generate_uuid, db_index=True)
 
     def __str__(self) -> str:
         return self.user.phone_number
@@ -141,17 +141,17 @@ class Profile(models.Model):
 
 class Subscription(TimeStamp):
     follower = models.ForeignKey(
-        BaseUser, on_delete=models.CASCADE, related_name='follower'
+        Profile, on_delete=models.CASCADE, related_name='follower', db_index=True
     )
     target = models.ForeignKey(
-        BaseUser, on_delete=models.CASCADE, related_name='target'
+        Profile, on_delete=models.CASCADE, related_name='target', db_index=True
     )
 
     class Meta:
         unique_together = ('follower', 'target')
 
     def __str__(self) -> str:
-        return f"{self.follower.phone_number} >> {self.target.phone_number}"
+        return f"{self.follower.user.phone_number} >> {self.target.user.phone_number}"
     
     def clean(self) -> None:
         from django.core.exceptions import ValidationError

@@ -49,15 +49,15 @@ def profile_detail(*, uuid:str) ->Profile:
     # TODO: Caching views for profile views
     return profile
 
-def subscribe(*, follower:BaseUser, target_uuid:str) -> Subscription:
+def subscribe(*, follower:Profile, target_uuid:str) -> Subscription:
     """
     Create subscription method by passing two arguments:
     1 - follower >> User instance of the follower
     2 - target_uuid     >> The uuid that belongs to target_user
     """
     try:
-        target_user = BaseUser.objects.get(profile__uuid=target_uuid)
-    except BaseUser.DoesNotExist:
+        target_user = Profile.objects.get(uuid=target_uuid)
+    except Profile.DoesNotExist:
         raise APIException(
             'There is no user with provided uuid.'
         )
@@ -68,15 +68,15 @@ def subscribe(*, follower:BaseUser, target_uuid:str) -> Subscription:
     return subscription
 
 @transaction.atomic
-def unsubscribe(*, un_follower:BaseUser, target_uuid:str) -> Subscription:
+def unsubscribe(*, un_follower:Profile, target_uuid:str) -> Subscription:
     """
     Deleting subscription method by passing two arguments:
     1 - un_follower >> User instance of the follower
     2 - target_uuid        >> The uuid that belongs to target_user
     """
     try:
-        target_user = BaseUser.objects.get(profile__uuid=target_uuid)
-    except BaseUser.DoesNotExist:
+        target_user = Profile.objects.get(uuid=target_uuid)
+    except Profile.DoesNotExist:
         raise APIException(
             'There is no user with provided uuid.'
         )

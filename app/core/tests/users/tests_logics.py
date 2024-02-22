@@ -83,19 +83,19 @@ class TestUserServices(TestCase):
         user1 = register(
             phone_number='09132222222', email=None, password='1234@example.com'
         )
-        subscribe(follower=self.sample_user, target_uuid=user1.profile.uuid)
+        subscribe(follower=self.sample_user.profile, target_uuid=user1.profile.uuid)
 
-        self.assertEqual(user1.target.all().count(), 1)
+        self.assertEqual(user1.profile.target.all().count(), 1)
 
     def test_unsubscribe_logic(self):
         user1 = register(
             phone_number='09132222222', email=None, password='1234@example.com'
         )
-        subscribe(follower=self.sample_user, target_uuid=user1.profile.uuid)
-        self.assertEqual(user1.target.all().count(), 1)
+        subscribe(follower=self.sample_user.profile, target_uuid=user1.profile.uuid)
+        self.assertEqual(user1.profile.target.all().count(), 1)
 
-        unsubscribe(un_follower=self.sample_user, target_uuid=user1.profile.uuid)
-        self.assertEqual(user1.target.all().count(), 0)
+        unsubscribe(un_follower=self.sample_user.profile, target_uuid=user1.profile.uuid)
+        self.assertEqual(user1.profile.target.all().count(), 0)
 
     def test_list_freelancers(self):
         sample_user_profile = Profile.objects.get(user__phone_number='09131111111')
@@ -128,11 +128,11 @@ class TestUserServices(TestCase):
             phone_number='09133333333', email=None, password='1234@example.com'
         )
         user2 = register(
-            phone_number='09133333333', email=None, password='1234@example.com'
+            phone_number='09132222222', email=None, password='1234@example.com'
         )
-        subscribe(follower=user1, target_uuid=self.sample_user.profile.uuid)
-        subscribe(follower=user2, target_uuid=self.sample_user.profile.uuid)
-        queryset = my_followers(user=self.sample_user)
+        subscribe(follower=user1.profile, target_uuid=self.sample_user.profile.uuid)
+        subscribe(follower=user2.profile, target_uuid=self.sample_user.profile.uuid)
+        queryset = my_followers(profile=self.sample_user.profile)
 
         self.assertEqual(len(queryset), 2)
 
@@ -141,10 +141,10 @@ class TestUserServices(TestCase):
             phone_number='09133333333', email=None, password='1234@example.com'
         )
         user2 = register(
-            phone_number='09133333333', email=None, password='1234@example.com'
+            phone_number='09132222222', email=None, password='1234@example.com'
         )
-        subscribe(follower=self.sample_user, target_uuid=user1.profile.uuid)
-        subscribe(follower=self.sample_user, target_uuid=user2.profile.uuid)
-        queryset = my_followings(user=self.sample_user)
+        subscribe(follower=self.sample_user.profile, target_uuid=user1.profile.uuid)
+        subscribe(follower=self.sample_user.profile, target_uuid=user2.profile.uuid)
+        queryset = my_followings(profile=self.sample_user.profile)
 
         self.assertEqual(len(queryset), 2)

@@ -212,7 +212,7 @@ class SubscriptionApiView(APIView):
     def get(self, request, uuid, *args, **kwargs):
         try:
             subscribe(
-                follower=request.user, target_uuid=uuid
+                follower=request.user.profile, target_uuid=uuid
             )
         except Exception as ex:
             raise APIException(
@@ -223,7 +223,7 @@ class SubscriptionApiView(APIView):
     def delete(self, request, uuid, *args, **kwargs):
         try:
             unsubscribe(
-                un_follower=request.user, target_uuid=uuid
+                un_follower=request.user.profile, target_uuid=uuid
             )
         except Exception as ex:
             raise APIException(
@@ -245,7 +245,7 @@ class ListFreelancersApiView(APIView):
             model = Profile
             fields = (
                 'email', 'bio', 'image',
-                'score', 'uuid', 'absolute_url'
+                'score', 'absolute_url'
             )
 
         def get_absolute_url(self, profile):
@@ -261,8 +261,11 @@ class ListFreelancersApiView(APIView):
             raise APIException(
                 f'Database Error >> {ex}'
             )
-        response = self.OutputFreelancersSerializer(
-            freelancers, context={'request': request}, many=True
-        ).data
 
-        return Response(response, status=status.HTTP_200_OK)
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=self.OutputFreelancersSerializer,
+            queryset=freelancers,
+            request=request,
+            view=self
+        )
