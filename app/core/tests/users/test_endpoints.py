@@ -148,30 +148,30 @@ class TestPrivateUserEndpoints(TestCase):
     
     def test_list_my_followers_with_authenticated_user(self):
         user1 = register(
-            phone_number='09131234567',
+            phone_number='09132222222',
             email='sample_user@gmail.com',
             password='1234@example.com'
         )
         user2 = register(
-            phone_number='09131234567',
+            phone_number='09133333333',
             email='sample_user@gmail.com',
             password='1234@example.com'
         )
-        subscribe(follower=user1.profile.uuid, target_uuid=self.user_obj.profile)
+        subscribe(follower=user1.profile, target_uuid=self.user_obj.profile.uuid)
         subscribe(follower=user1.profile, target_uuid=user2.profile.uuid)
         response = self.client.get(FOLLOWERS_URL)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)
 
     def test_list_my_followings_with_authenticated_user(self):
         user1 = register(
-            phone_number='09131234567',
+            phone_number='09132222222',
             email='sample_user@gmail.com',
             password='1234@example.com'
         )
         user2 = register(
-            phone_number='09131234567',
+            phone_number='09133333333',
             email='sample_user@gmail.com',
             password='1234@example.com'
         )
@@ -180,4 +180,4 @@ class TestPrivateUserEndpoints(TestCase):
         response = self.client.get(FOLLOWINGS_URL)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(len(response.data['results']), 1)

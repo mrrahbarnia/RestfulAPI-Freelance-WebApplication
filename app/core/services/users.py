@@ -37,6 +37,7 @@ def update_profile(
     profile_obj.save()
     return profile_obj
 
+@transaction.atomic
 def register(*, phone_number:str, email:str, password:str) -> BaseUser:
     user = create_user(phone_number=phone_number, password=password)
     create_profile(user=user, email=email)
@@ -67,7 +68,6 @@ def subscribe(*, follower:Profile, target_uuid:str) -> Subscription:
     # TODO:Caching
     return subscription
 
-@transaction.atomic
 def unsubscribe(*, un_follower:Profile, target_uuid:str) -> Subscription:
     """
     Deleting subscription method by passing two arguments:

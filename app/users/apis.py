@@ -16,7 +16,9 @@ from core.pagination import (
 )
 from core.selectors.users import (
     get_profile,
-    get_freelancers
+    get_freelancers,
+    my_followers,
+    my_followings
 )
 from core.services.users import (
     register,
@@ -27,7 +29,8 @@ from core.services.users import (
 )
 from .models import (
     BaseUser,
-    Profile
+    Profile,
+    Subscription
 )
 from .validators import (
     phone_validator,
@@ -37,8 +40,17 @@ from .validators import (
 )
 
 
-class RegistrationApiView(APIView):
+class ProfileSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Profile
+        fields = (
+            'email', 'bio', 'image', 'age', 'plan_type',
+            'balance', 'score', 'sex', 'city', 'views'
+        )
+
+
+class RegistrationApiView(APIView):
 
     class InputRegisterSerializer(serializers.Serializer):
         phone_number = serializers.CharField(
@@ -131,17 +143,7 @@ class ProfileMeApiView(APIView):
                 )
             return age
 
-
-    class OutPutProfileMeSerializer(serializers.ModelSerializer):
-        
-        class Meta:
-            model = Profile
-            fields = (
-                'email', 'bio', 'image', 'age', 'plan_type',
-                'balance', 'score', 'sex', 'city', 'views'
-            )
-
-    @extend_schema(responses=OutPutProfileMeSerializer)
+    @extend_schema(responses=ProfileSerializer)
     def get(self, request, *args, **kwargs):
         try:
             profile = get_profile(user=request.user)
@@ -149,13 +151,13 @@ class ProfileMeApiView(APIView):
             raise APIException(
                 f'Database Error >> {ex}'
             )
-        response = self.OutPutProfileMeSerializer(profile).data
+        response = ProfileSerializer(profile).data
 
         return Response(response, status=status.HTTP_200_OK)
     
     @extend_schema(
             request=UpdateProfileSerializer,
-            responses=OutPutProfileMeSerializer
+            responses=ProfileSerializer
     )
     def patch(self, request, *args, **kwargs):
         serializer = self.UpdateProfileSerializer(data=request.data)
@@ -175,24 +177,14 @@ class ProfileMeApiView(APIView):
                 f'Database Error >> {ex}'
             )
 
-        response = self.OutPutProfileMeSerializer(profile).data
+        response = ProfileSerializer(profile).data
         return Response(response, status=status.HTTP_200_OK)
 
 
 class ProfileDetailApiView(APIView):
 
-
-    class OutputProfileDetailSerializer(serializers.ModelSerializer):
-
-        class Meta:
-            model = Profile
-            fields = (
-                'email', 'bio', 'image', 'age', 'plan_type',
-                'score', 'sex', 'city', 'views'
-            )
-
     @extend_schema(
-            responses=OutputProfileDetailSerializer
+            responses=ProfileSerializer
     )
     def get(self, request, uuid, *args, **kwargs):
         try:
@@ -202,7 +194,7 @@ class ProfileDetailApiView(APIView):
                 f'Database Error >> {ex}'
             )
 
-        response = self.OutputProfileDetailSerializer(profile).data
+        response = ProfileSerializer(profile).data
         return Response(response, status=status.HTTP_200_OK)
 
 
@@ -233,14 +225,15 @@ class SubscriptionApiView(APIView):
 
 
 class ListFreelancersApiView(APIView):
-
+    """List all freelancers sorted by their score."""
 
     class Pagination(LimitOffsetPagination):
         default_limit = 20
 
 
-    class OutputFreelancersSerializer(serializers.ModelSerializer):
+    class OutputFreelancerSerializer(serializers.ModelSerializer):
         absolute_url = serializers.SerializerMethodField()
+
         class Meta:
             model = Profile
             fields = (
@@ -249,11 +242,11 @@ class ListFreelancersApiView(APIView):
             )
 
         def get_absolute_url(self, profile):
-            request = self.context.get('request')
-            path = reverse('users:profile_detail', args=[profile.uuid])
-            return request.build_absolute_uri(path)
+                request = self.context.get('request')
+                path = reverse('users:profile_detail', args=[profile.uuid])
+                return request.build_absolute_uri(path)
 
-    @extend_schema(responses=OutputFreelancersSerializer)
+    @extend_schema(responses=OutputFreelancerSerializer)
     def get(self, request, *args, **kwargs):
         try:
             freelancers = get_freelancers()
@@ -264,8 +257,75 @@ class ListFreelancersApiView(APIView):
 
         return get_paginated_response_context(
             pagination_class=self.Pagination,
-            serializer_class=self.OutputFreelancersSerializer,
+            serializer_class=self.OutputFreelancerSerializer,
             queryset=freelancers,
+            request=request,
+            view=self
+        )
+
+
+class ListMyFollowersApiView(APIView):
+    """Listing all my followers with
+    pagination by default_limit 15 page."""
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 15
+
+
+    class SubscriptionSerializer(serializers.ModelSerializer):
+        follower = serializers.CharField(source='follower.email')
+        class Meta:
+            model = Subscription
+            fields = ['follower']
+    
+    @extend_schema(responses=SubscriptionSerializer)
+    def get(self, request, *args, **kwargs):
+        try:
+            followers = my_followers(profile=request.user.profile)
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+        
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=self.SubscriptionSerializer,
+            queryset=followers,
+            request=request,
+            view=self
+        )
+
+class ListMyFollowingsApiView(APIView):
+    """Listing all my followings with
+    pagination by default_limit 15 page."""
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    class Pagination(LimitOffsetPagination):
+        default_limit = 15
+
+
+    class SubscriptionSerializer(serializers.ModelSerializer):
+        target = serializers.CharField(source='target.email')
+        class Meta:
+            model = Subscription
+            fields = ['target']
+
+    @extend_schema(responses=SubscriptionSerializer)
+    def get(self, request, *args, **kwargs):
+        try:
+            followings = my_followings(profile=request.user.profile)
+        except Exception as ex:
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
+
+        return get_paginated_response_context(
+            pagination_class=self.Pagination,
+            serializer_class=self.SubscriptionSerializer,
+            queryset=followings,
             request=request,
             view=self
         )
