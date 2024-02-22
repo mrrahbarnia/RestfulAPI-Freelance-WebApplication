@@ -15,6 +15,8 @@ from ...services.users import (
 REGISTRATION_URL = reverse('users:registration')
 GET_PROFILE_URL = reverse('users:profile_me')
 GET_FREELANCERS_URL = reverse('users:freelancers_list')
+FOLLOWERS_URL = reverse('users:followers')
+FOLLOWINGS_URL = reverse('users:followings')
 
 
 class TestPublicUserEndpoints(TestCase):
@@ -81,6 +83,15 @@ class TestPublicUserEndpoints(TestCase):
         response = self.client.get(GET_FREELANCERS_URL)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_list_my_followers_with_unauthenticated_user(self):
+        response = self.client.get(FOLLOWERS_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_list_my_followers_with_unauthenticated_user(self):
+        response = self.client.get(FOLLOWINGS_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestPrivateUserEndpoints(TestCase):
@@ -134,4 +145,39 @@ class TestPrivateUserEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(self.user_obj.profile.target.all().count(), 0)
+    
+    def test_list_my_followers_with_authenticated_user(self):
+        user1 = register(
+            phone_number='09131234567',
+            email='sample_user@gmail.com',
+            password='1234@example.com'
+        )
+        user2 = register(
+            phone_number='09131234567',
+            email='sample_user@gmail.com',
+            password='1234@example.com'
+        )
+        subscribe(follower=user1.profile.uuid, target_uuid=self.user_obj.profile)
+        subscribe(follower=user1.profile, target_uuid=user2.profile.uuid)
+        response = self.client.get(FOLLOWERS_URL)
 
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_list_my_followings_with_authenticated_user(self):
+        user1 = register(
+            phone_number='09131234567',
+            email='sample_user@gmail.com',
+            password='1234@example.com'
+        )
+        user2 = register(
+            phone_number='09131234567',
+            email='sample_user@gmail.com',
+            password='1234@example.com'
+        )
+        subscribe(follower=self.user_obj.profile, target_uuid=user1.profile.uuid)
+        subscribe(follower=user1.profile, target_uuid=user2.profile.uuid)
+        response = self.client.get(FOLLOWINGS_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
