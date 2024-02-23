@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db.models import QuerySet
 
 from users.models import (
@@ -13,11 +14,23 @@ def get_freelancers() -> QuerySet[Profile]:
     return Profile.objects.all().order_by('-score')
 
 def my_followers(*, profile:Profile) -> QuerySet[Subscription]:
-    return Subscription.objects.only(
-        'follower'
-    ).select_related('follower').filter(target=profile)
+    cached_data = cache.get(f'followers_{profile}')
+    if cached_data:
+        return cached_data
+    else:
+        followers = Subscription.objects.only(
+            'follower'
+        ).select_related('follower').filter(target=profile)
+        cache.set(key=f'followers_{profile}', value=followers, timeout=None)
+        return followers
 
 def my_followings(*, profile:Profile) -> QuerySet[Subscription]:
-    return Subscription.objects.only(
-        'target'
-    ).select_related('target').filter(follower=profile)
+    cached_data = cache.get(f'followings_{profile}')
+    if cached_data:
+        return cached_data
+    else:
+        followings = Subscription.objects.only(
+            'target'
+        ).select_related('target').filter(follower=profile)
+        cache.set(key=f'followings_{profile}', value=followings, timeout=None)
+        return followings

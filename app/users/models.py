@@ -136,7 +136,7 @@ class Profile(models.Model):
     uuid = models.CharField(max_length=None, default=generate_uuid, db_index=True)
 
     def __str__(self) -> str:
-        return self.user.phone_number
+        return self.uuid
 
 
 class Subscription(TimeStamp):

@@ -66,7 +66,7 @@ class TestPublicUserEndpoints(TestCase):
         response = self.client.get(GET_PROFILE_URL)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
+
     def test_retrieve_detail_profile_with_increasing_views(self):
         anonymous_user = register(
             phone_number='09131111111', email=None, password='1234@example.com'
@@ -77,8 +77,8 @@ class TestPublicUserEndpoints(TestCase):
         anonymous_user.refresh_from_db()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(anonymous_user.profile.views, 1)
-    
+        self.assertEqual(response.data['views'], 1)
+
     def test_get_freelancers_list_url(self):
         response = self.client.get(GET_FREELANCERS_URL)
 
