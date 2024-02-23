@@ -17,6 +17,8 @@ GET_PROFILE_URL = reverse('users:profile_me')
 GET_FREELANCERS_URL = reverse('users:freelancers_list')
 FOLLOWERS_URL = reverse('users:followers')
 FOLLOWINGS_URL = reverse('users:followings')
+VERIFICATION_URL = reverse('users:verification')
+RESEND_OTP_URL = reverse('users:resend_otp')
 
 
 class TestPublicUserEndpoints(TestCase):
@@ -38,8 +40,10 @@ class TestPublicUserEndpoints(TestCase):
 
         self.assertTrue(Profile.objects.filter(user=user_obj).exists(), True)
         self.assertEqual(Profile.objects.all().count(), 1)
+        self.assertEqual(user_obj.is_active, False)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['phone_number'], payload['phone_number'])
+        self.assertIn('OTP', response.data)
         self.assertTrue(
             BaseUser.objects.filter(
                 phone_number=payload['phone_number']
@@ -93,6 +97,26 @@ class TestPublicUserEndpoints(TestCase):
         response = self.client.get(FOLLOWINGS_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_resend_otp_endpoint_with_unauthenticated_user_successfully(self):
+        register(
+            phone_number='09131111111', email=None, password='1234@example.com'
+        )
+        payload = {
+            'phone_number': '09131111111'
+        }
+        response = self.client.post(RESEND_OTP_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response.data, 'OTP was resent...')
+
+    def test_resend_otp_endpoint_with_unauthenticated_user_unsuccessfully(self):
+        payload = {
+            'phone_number': '09131111111'
+        }
+        response = self.client.post(RESEND_OTP_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response.data, 'There is no user with the provided phone number...')
 
 class TestPrivateUserEndpoints(TestCase):
     """Test endpoints with authenticated client."""
