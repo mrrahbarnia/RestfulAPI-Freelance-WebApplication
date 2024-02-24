@@ -18,7 +18,8 @@ ALLOWED_HOSTS = []
 
 LOCAL_APPS = [
     'core.apps.CoreConfig',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'portfolio.apps.PortfolioConfig',
 ]
 
 THIRD_PARTY_APP = [

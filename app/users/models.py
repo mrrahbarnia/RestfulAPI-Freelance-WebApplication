@@ -133,6 +133,9 @@ class Profile(models.Model):
     sex = models.CharField(max_length=2, choices=SEX, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
+    # skills = models.ManyToManyField(
+    #     'Skill', related_name='skill_profile', through='ProfileSkill'
+    # )
     uuid = models.CharField(max_length=None, default=generate_uuid, db_index=True)
 
     def __str__(self) -> str:
@@ -159,6 +162,6 @@ class Subscription(TimeStamp):
             raise ValidationError('User Cannot follow himself.')
 
 
-# TODO:class Portfolio(models.Model)
-# TODO:class Comment(models.Model)
-# TODO:class Skill(models.Model)
+# class Skill(TimeStamp):
+#     name = models.CharField(max_length=250)
+#     category = models.
