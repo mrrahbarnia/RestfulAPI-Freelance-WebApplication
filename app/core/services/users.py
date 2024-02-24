@@ -1,15 +1,23 @@
 """
 Layer for users services Business logics.
 """
+import random
+
 from django.db import transaction
 from django.core.cache import cache
 from rest_framework.exceptions import APIException
-
+from rest_framework import serializers
 from users.models import (
     BaseUser,
     Profile,
     Subscription
 )
+
+def otp_generator():
+    """Generate OTP for verification."""
+    otp = random.randint(100000, 999999)
+    return otp
+
 
 def create_user(*, phone_number:str, password:str) -> BaseUser:
     user = BaseUser.objects.create_user(
@@ -41,9 +49,24 @@ def update_profile(
     profile_obj.save()
     return profile_obj
 
+def send_otp(*, phone_number:str) -> None:
+    otp = otp_generator()
+    cache.set(key=f'otp_{otp}_{phone_number}', value=otp, timeout=60*2)
+    # TODO: Sending OTP via sms...
+
+def resend_otp(*, phone_number:str) -> None:
+    try:
+        BaseUser.objects.get(phone_number=phone_number)
+        send_otp(phone_number=phone_number)
+    except BaseUser.DoesNotExist:
+        raise serializers.ValidationError(
+            'There is no user with the provided phone number.',
+        )
+
 @transaction.atomic
 def register(*, phone_number:str, email:str, password:str) -> BaseUser:
     user = create_user(phone_number=phone_number, password=password)
+    send_otp(phone_number=phone_number)
     create_profile(user=user, email=email)
     return user
 
@@ -102,3 +125,15 @@ def unsubscribe(*, un_follower:Profile, target_uuid:str) -> Subscription:
         )
     subscription.delete()
     # TODO:Caching
+
+def verify_otp(*, otp:int) -> None:
+    cached_data = cache.keys(f'otp_{otp}_*') # 'otp_{otp}_{phone_number}'
+    if cached_data: # Probably there is one cache data with this pattern so it doesn't take too long to process
+        for otp_key in cached_data:
+            phone_number = otp_key.split('_')[2]
+            user = BaseUser.objects.get(phone_number=phone_number)
+            user.is_active = True
+            user.save()
+            cache.delete(f'otp_{otp}_{phone_number}')
+    else:
+        raise APIException('The OTP has been expired or not valid.Get a new one...')

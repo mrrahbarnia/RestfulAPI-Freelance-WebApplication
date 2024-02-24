@@ -25,7 +25,9 @@ from core.services.users import (
     update_profile,
     profile_detail,
     subscribe,
-    unsubscribe
+    unsubscribe,
+    verify_otp,
+    resend_otp
 )
 from .models import (
     BaseUser,
@@ -114,6 +116,7 @@ class RegistrationApiView(APIView):
             )
 
         response = self.OutputRegisterSerializer(logic).data
+        response.update({'OTP': 'OTP was sent.'})
         return Response(response, status=status.HTTP_200_OK)
 
 
@@ -328,4 +331,42 @@ class ListMyFollowingsApiView(APIView):
             queryset=followings,
             request=request,
             view=self
+        )
+
+
+class OtpVerificationApiView(APIView):
+    # TODO: Permission for only users which not activated yet
+
+    class InputOtpSerializer(serializers.Serializer):
+        otp = serializers.IntegerField(required=True)
+
+    @extend_schema(request=InputOtpSerializer)
+    def post(self, request, *args, **kwargs):
+        serializer = self.InputOtpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        verify_otp(otp=serializer.validated_data.get('otp'))
+        return Response(
+            {'detail': 'The account has been verified successfully.'},
+            status=status.HTTP_200_OK
+        )
+
+
+class ResendOtpApiView(APIView):
+
+
+    class InputResendOtpSerializer(serializers.Serializer):
+        phone_number = serializers.CharField(
+            validators = [phone_validator], required=True
+        )
+
+    @extend_schema(request=InputResendOtpSerializer)
+    def post(self, request, *args, **kwargs):
+        serializers = self.InputResendOtpSerializer(data=request.data)
+        serializers.is_valid(raise_exception=True)
+        resend_otp(
+            phone_number=serializers.validated_data.get('phone_number')
+        )
+        return Response(
+            {'detail': 'OTP was resent successfully.'},
+            status=status.HTTP_200_OK
         )

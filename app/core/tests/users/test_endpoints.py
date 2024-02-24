@@ -1,5 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.core.cache import cache
+from unittest.mock import patch
 from rest_framework.test import APIClient
 from rest_framework import status
 
@@ -26,6 +28,9 @@ class TestPublicUserEndpoints(TestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
+    
+    def tearDown(self) -> None:
+        cache.delete_pattern('*')
 
     def test_registration_endpoint_successfully(self):
         payload = {
@@ -97,7 +102,7 @@ class TestPublicUserEndpoints(TestCase):
         response = self.client.get(FOLLOWINGS_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_resend_otp_endpoint_with_unauthenticated_user_successfully(self):
+    def test_resend_otp_endpoint_with_existing_phone_number(self):
         register(
             phone_number='09131111111', email=None, password='1234@example.com'
         )
@@ -107,16 +112,28 @@ class TestPublicUserEndpoints(TestCase):
         response = self.client.post(RESEND_OTP_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(response.data, 'OTP was resent...')
+        self.assertEqual(response.data['detail'], 'OTP was resent successfully.')
 
-    def test_resend_otp_endpoint_with_unauthenticated_user_unsuccessfully(self):
+    def test_resend_otp_endpoint_with_not_existing_phone_number(self):
         payload = {
             'phone_number': '09131111111'
         }
         response = self.client.post(RESEND_OTP_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertContains(response.data, 'There is no user with the provided phone number...')
+        self.assertEqual((eval(response.content)), ['There is no user with the provided phone number.'])
+
+    @patch('core.services.users.otp_generator')
+    def test_set_cached_otp_after_registration(self, mocked):
+        otp = 123456
+        mocked.return_value = otp
+        phone_number='09131111111'
+        register(
+            phone_number=phone_number, email=None, password='1234@example.com'
+        )
+
+        self.assertTrue(cache.get(f'otp_{otp}_{phone_number}'))
+
 
 class TestPrivateUserEndpoints(TestCase):
     """Test endpoints with authenticated client."""
@@ -129,6 +146,9 @@ class TestPrivateUserEndpoints(TestCase):
             phone_number=phone_number, email=None, password=password
         )
         self.client.force_authenticate(self.user_obj)
+    
+    def tearDown(self) -> None:
+        cache.delete_pattern('*')
         
     def test_retrieve_profile_successfully(self):
         response = self.client.get(GET_PROFILE_URL)

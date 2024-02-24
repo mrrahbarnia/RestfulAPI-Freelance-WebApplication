@@ -18,6 +18,10 @@ urlpatterns = [
     path('freelancers/', apis.ListFreelancersApiView.as_view(), name='freelancers_list'),
     path('followers/', apis.ListMyFollowersApiView.as_view(), name='followers'),
     path('followings/', apis.ListMyFollowingsApiView.as_view(), name='followings'),
+    path('otp/verification/', apis.OtpVerificationApiView.as_view(), name='verification'),
+    path('otp/resend/', apis.ResendOtpApiView.as_view(), name='resend_otp'),
+
+
 
 
     # ============ JWT URL's ============

@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.core.cache import cache
 
 from users.models import (
     BaseUser,
@@ -29,6 +30,9 @@ class TestUserServices(TestCase):
         self.sample_user = register(
             phone_number=self.phone_number, email=self.email, password=self.password
         )
+    
+    def tearDown(self) -> None:
+        cache.delete_pattern('*')
 
     def test_register_successfully(self):
 

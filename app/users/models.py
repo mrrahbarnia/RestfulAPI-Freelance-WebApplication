@@ -161,5 +161,4 @@ class Subscription(TimeStamp):
 
 # TODO:class Portfolio(models.Model)
 # TODO:class Comment(models.Model)
-# TODO:class Follow(models.Model)
 # TODO:class Skill(models.Model)
