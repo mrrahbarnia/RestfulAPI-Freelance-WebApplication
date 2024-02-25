@@ -3,11 +3,9 @@ import uuid
 
 from django.db import models
 
+from skill.models import Skill
 from core.timestamp import TimeStamp
-from users.models import (
-    BaseUser,
-    Skill
-)
+from users.models import BaseUser
 
 def portfolio_cover_img_path(instance, file_name):
     """Generating unique path for portfolio cover images."""
@@ -26,9 +24,9 @@ class Portfolio(TimeStamp):
     description = models.TextField()
     views = models.PositiveIntegerField(default=0)
     cover_image = models.ImageField(upload_to=portfolio_cover_img_path, null=True, blank=True)
-    # skills = models.ManyToManyField(
-    #     Skill, related_name='skill_portfolio', through='PortfolioSkill'
-    # )
+    skills = models.ManyToManyField(
+        Skill, related_name='skill_portfolio', through='PortfolioSkill'
+    )
     likes = models.PositiveIntegerField(default=0)
 
     def __str__(self) -> str:
@@ -51,3 +49,15 @@ class PortfolioComment(TimeStamp):
 
     def __str__(self) -> str:
         return self.portfolio
+
+
+class PortfolioSkill(models.Model):
+    portfolio_id = models.ForeignKey(
+        Portfolio, on_delete=models.CASCADE, related_name='portfolio_skill_prt'
+    )
+    skill_id = models.ForeignKey(
+        Skill, on_delete=models.CASCADE, related_name='portfolio_skill_sk'
+    )
+
+    class Meta:
+        unique_together = ('portfolio_id', 'skill_id')

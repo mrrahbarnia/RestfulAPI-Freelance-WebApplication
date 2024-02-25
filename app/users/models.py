@@ -9,6 +9,7 @@ from django.contrib.auth.base_user import (
 )
 
 from core.timestamp import TimeStamp
+from skill.models import Skill
 from .validators import (
     profile_image_size_validator,
     age_validator
@@ -133,9 +134,9 @@ class Profile(models.Model):
     sex = models.CharField(max_length=2, choices=SEX, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
-    # skills = models.ManyToManyField(
-    #     'Skill', related_name='skill_profile', through='ProfileSkill'
-    # )
+    skills = models.ManyToManyField(
+        Skill, related_name='skill_profile', through='ProfileSkill'
+    )
     uuid = models.CharField(max_length=None, default=generate_uuid, db_index=True)
 
     def __str__(self) -> str:
@@ -162,6 +163,13 @@ class Subscription(TimeStamp):
             raise ValidationError('User Cannot follow himself.')
 
 
-# class Skill(TimeStamp):
-#     name = models.CharField(max_length=250)
-#     category = models.
+class ProfileSkill(models.Model):
+    profile_id = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name='profile_skill_prof'
+    )
+    skill_id = models.ForeignKey(
+        Skill, on_delete=models.CASCADE, related_name='profile_skill_sk'
+    )
+
+    class Meta:
+        unique_together = ('profile_id', 'skill_id')

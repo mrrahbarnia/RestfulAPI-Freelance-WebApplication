@@ -20,6 +20,7 @@ LOCAL_APPS = [
     'core.apps.CoreConfig',
     'users.apps.UsersConfig',
     'portfolio.apps.PortfolioConfig',
+    'skill.apps.SkillConfig',
 ]
 
 THIRD_PARTY_APP = [
