@@ -5,7 +5,7 @@ from django.db import models
 
 from skill.models import Skill
 from core.timestamp import TimeStamp
-from users.models import BaseUser
+from users.models import Profile
 
 def portfolio_cover_img_path(instance, file_name):
     """Generating unique path for portfolio cover images."""
@@ -16,8 +16,8 @@ def portfolio_cover_img_path(instance, file_name):
 
 
 class Portfolio(TimeStamp):
-    user = models.ForeignKey(
-        BaseUser, on_delete=models.CASCADE, related_name='portfolio'
+    profile = models.ForeignKey(
+        Profile, on_delete=models.CASCADE, related_name='portfolio'
     )
     title = models.CharField(max_length=250)
     slug = models.CharField(max_length=None, db_index=True)
