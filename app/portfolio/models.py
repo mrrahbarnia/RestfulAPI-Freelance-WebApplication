@@ -21,7 +21,7 @@ class Portfolio(TimeStamp):
     )
     title = models.CharField(max_length=250)
     slug = models.CharField(max_length=None, db_index=True)
-    description = models.TextField()
+    description = models.CharField(max_length=1000, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
     cover_image = models.ImageField(upload_to=portfolio_cover_img_path, null=True, blank=True)
     skills = models.ManyToManyField(
@@ -30,7 +30,7 @@ class Portfolio(TimeStamp):
     likes = models.PositiveIntegerField(default=0)
 
     def __str__(self) -> str:
-        return f'{self.user} >> {self.title}'
+        return f'{self.profile} >> {self.title}'
 
 
 class PortfolioImage(TimeStamp):
@@ -61,3 +61,18 @@ class PortfolioSkill(models.Model):
 
     class Meta:
         unique_together = ('portfolio_id', 'skill_id')
+
+    def __str__(self) -> str:
+        return f'{self.portfolio_id.title} >> {self.skill_id}'
+
+    def clean(self) -> None:
+
+        from django.core.exceptions import ValidationError
+
+        qs = list(Skill.objects.filter(
+            skill_profile=self.portfolio_id.profile
+        ).values_list('name', flat=True))
+        if str(self.skill_id) not in qs:
+            raise ValidationError(
+                'This profile has not the provided skills for this portfolio.'
+            )

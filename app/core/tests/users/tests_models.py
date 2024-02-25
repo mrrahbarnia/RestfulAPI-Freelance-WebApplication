@@ -10,7 +10,10 @@ from skill.models import (
     Skill,
     Category
 )
-from portfolio.models import Portfolio
+from portfolio.models import (
+    Portfolio,
+    PortfolioSkill
+)
 
 User = get_user_model()
 
@@ -74,6 +77,9 @@ class TestUserModels(TestCase):
             slug='sample-portfolio'
         )
         sample_profile.skills.add(sample_skill1)
+
+        portfolio_skill = PortfolioSkill(
+            portfolio_id=sample_portfolio, skill_id=sample_skill2
+        )
         with self.assertRaises(ValidationError):
-            sample_portfolio.skills.add(sample_skill2)
-        
+            portfolio_skill.full_clean()

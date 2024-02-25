@@ -158,7 +158,9 @@ class Subscription(TimeStamp):
         return f"{self.follower.user.phone_number} >> {self.target.user.phone_number}"
     
     def clean(self) -> None:
+
         from django.core.exceptions import ValidationError
+
         if self.follower.id == self.target.id:
             raise ValidationError('User Cannot follow himself.')
 
@@ -173,3 +175,6 @@ class ProfileSkill(models.Model):
 
     class Meta:
         unique_together = ('profile_id', 'skill_id')
+    
+    def __str__(self) -> str:
+        return f'{self.profile_id.user.phone_number} >> {self.skill_id.name}'
