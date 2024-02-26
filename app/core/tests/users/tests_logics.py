@@ -21,7 +21,7 @@ from ...services.users import (
 )
 
 
-class TestUserServices(TestCase):
+class TestUsersLogics(TestCase):
 
     def setUp(self) -> None:
         self.phone_number = '09131111111'
