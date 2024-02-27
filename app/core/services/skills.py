@@ -3,7 +3,6 @@ from skill.models import (
     Category
 )
 
-
 def create_category(*, name:str) -> Category:
     return Category.objects.create(name=name)
 

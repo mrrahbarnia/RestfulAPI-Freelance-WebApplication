@@ -28,21 +28,34 @@ class TestSkillLogics(TestCase):
     
     def test_get_categories(self):
         cat1 = create_category(name='Backend Development')
+        cat1.status = True
+        cat1.save()
         cat2 = create_category(name='UI')
+        cat2.status = True
+        cat2.save()
 
-        categories = get_categories()
-
+        categories = get_categories(name=None)
         self.assertIn(cat1, categories)
         self.assertIn(cat2, categories)
         self.assertEqual(categories.count(), 2)
 
     def test_get_skills(self):
         cat = create_category(name='Backend Development')
+        empty_cat = create_category(name='Frontend Development')
         skill1 = create_skill(name='Django', category=cat)
+        skill1.status = True
+        skill1.save()
         skill2 = create_skill(name='FastAPI', category=cat)
+        skill2.status = True
+        skill2.save()
 
-        skills = get_skills()
-
+        skills = get_skills(category=None)
         self.assertIn(skill1, skills)
         self.assertIn(skill2, skills)
         self.assertEqual(skills.count(), 2)
+
+        skills = get_skills(category=cat)
+        self.assertEqual(skills.count(), 2)
+
+        skills = get_skills(category=empty_cat)
+        self.assertEqual(skills.count(), 0)
