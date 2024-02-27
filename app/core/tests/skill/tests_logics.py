@@ -67,6 +67,7 @@ class TestSkillLogics(TestCase):
         self.assertFalse(sample_category.status)
 
         publish_category(slug=sample_category.slug)
+        sample_category.refresh_from_db()
         self.assertTrue(sample_category.status)
 
 
@@ -76,4 +77,5 @@ class TestSkillLogics(TestCase):
         self.assertFalse(sample_skill.status)
 
         publish_skill(slug=sample_skill.slug)
+        sample_skill.refresh_from_db()
         self.assertTrue(sample_skill.status)

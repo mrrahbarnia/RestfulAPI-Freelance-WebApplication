@@ -114,13 +114,14 @@ class TestPrivateSkillEndpoints(TestCase):
             "category": "Frontend"
         }
 
-        self.admin_client.post(SKILL_URL, payload)
+        response = self.admin_client.post(SKILL_URL, payload)
 
-        self.assertEqual(Skill.objects.all().count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(Skill.objects.filter(name=payload['name']).exists())
 
     def test_create_skill_with_existing_category_successfully(self):
         create_category(name='Backend')
+
         payload = {
             'name': 'FastAPI',
             'category': 'Backend'

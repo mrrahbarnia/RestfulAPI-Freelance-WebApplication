@@ -9,7 +9,8 @@ from drf_spectacular.utils import extend_schema
 
 from core.selectors.skills import (
     get_categories,
-    get_skills
+    get_skills,
+    category_choices
 )
 from core.services.skills import (
     create_category,
@@ -74,13 +75,14 @@ class CategoryApiView(APIView):
         return Response(response, status=status.HTTP_201_CREATED)
 
 
+
+
 class SkillApiView(APIView):
     permission_classes = [IsAdminOrReadOnly]
 
     class InputSkillSerializer(serializers.Serializer):
 
-        CATEGORIES = get_categories(name=None)
-        CATEGORY_CHOICES = [category.name for category in CATEGORIES]
+        CATEGORY_CHOICES = category_choices()
 
         name = serializers.CharField(max_length=250)
         category = serializers.ChoiceField(

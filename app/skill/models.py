@@ -3,8 +3,9 @@ from django.db import models
 from core.timestamp import TimeStamp
 
 
-class Skill(models.Model):
+class Skill(TimeStamp):
     name = models.CharField(max_length=250, unique=True)
+    slug = models.CharField(max_length=250, db_index=True)
     category = models.ForeignKey(
         'Category', on_delete=models.CASCADE, related_name='skill_category'
     )
@@ -14,8 +15,9 @@ class Skill(models.Model):
         return self.name
 
 
-class Category(models.Model):
+class Category(TimeStamp):
     name = models.CharField(max_length=250, unique=True)
+    slug = models.CharField(max_length=250, db_index=True)
     status = models.BooleanField(default=False)
 
     def __str__(self) -> str:

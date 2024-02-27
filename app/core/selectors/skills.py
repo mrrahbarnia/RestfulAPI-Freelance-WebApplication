@@ -20,3 +20,7 @@ def get_skills(*, category:Category|None) -> QuerySet[Skill]:
         return Skill.objects.filter(category=category, status=True)
     else:
         return Skill.objects.filter(status=True)
+
+def category_choices() -> QuerySet[Category]:
+    # TODO: Caching
+    return list(Category.objects.filter(status=True).values_list('name', flat=True))
