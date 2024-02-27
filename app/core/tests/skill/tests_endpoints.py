@@ -114,7 +114,7 @@ class TestPrivateSkillEndpoints(TestCase):
             "category": "Frontend"
         }
 
-        response = self.admin_client.post(SKILL_URL, payload)
+        self.admin_client.post(SKILL_URL, payload)
 
         self.assertEqual(Skill.objects.all().count(), 0)
         self.assertFalse(Skill.objects.filter(name=payload['name']).exists())

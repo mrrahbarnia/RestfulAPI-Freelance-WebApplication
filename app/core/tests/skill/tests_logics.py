@@ -6,7 +6,9 @@ from skill.models import (
 )
 from ...services.skills import (
     create_category,
-    create_skill
+    create_skill,
+    publish_category,
+    publish_skill
 )
 from ...selectors.skills import (
     get_categories,
@@ -59,3 +61,19 @@ class TestSkillLogics(TestCase):
 
         skills = get_skills(category=empty_cat)
         self.assertEqual(skills.count(), 0)
+    
+    def test_publish_category(self):
+        sample_category = create_category(name='Backend')
+        self.assertFalse(sample_category.status)
+
+        publish_category(slug=sample_category.slug)
+        self.assertTrue(sample_category.status)
+
+
+    def test_publish_skill(self):
+        sample_category = create_category(name='Backend')
+        sample_skill = create_skill(category=sample_category, name='Django')
+        self.assertFalse(sample_skill.status)
+
+        publish_skill(slug=sample_skill.slug)
+        self.assertTrue(sample_skill.status)
