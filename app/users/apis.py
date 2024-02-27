@@ -1,3 +1,5 @@
+import logging
+
 from django.core.validators import MinLengthValidator
 from django.urls import reverse
 from rest_framework.views import APIView
@@ -40,6 +42,8 @@ from .validators import (
     number_validator,
     special_character_validator
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -111,9 +115,8 @@ class RegistrationApiView(APIView):
                 password=serializer.validated_data.get('password')
             )
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
 
         response = self.OutputRegisterSerializer(logic).data
         response.update({'OTP': 'OTP was sent.'})
@@ -151,9 +154,8 @@ class ProfileMeApiView(APIView):
         try:
             profile = get_profile(user=request.user)
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
         response = ProfileSerializer(profile).data
 
         return Response(response, status=status.HTTP_200_OK)
@@ -176,9 +178,8 @@ class ProfileMeApiView(APIView):
                 city=serializer.validated_data.get('city')
             )
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
 
         response = ProfileSerializer(profile).data
         return Response(response, status=status.HTTP_200_OK)
@@ -193,9 +194,8 @@ class ProfileDetailApiView(APIView):
         try:
             profile = profile_detail(uuid=uuid)
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
 
         response = ProfileSerializer(profile).data
         return Response(response, status=status.HTTP_200_OK)
@@ -210,9 +210,8 @@ class SubscriptionApiView(APIView):
                 follower=request.user.profile, target_uuid=uuid
             )
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, uuid, *args, **kwargs):
@@ -254,9 +253,8 @@ class ListFreelancersApiView(APIView):
         try:
             freelancers = get_freelancers()
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
 
         return get_paginated_response_context(
             pagination_class=self.Pagination,
@@ -288,9 +286,8 @@ class ListMyFollowersApiView(APIView):
         try:
             followers = my_followers(profile=request.user.profile)
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
         
         return get_paginated_response_context(
             pagination_class=self.Pagination,
@@ -321,9 +318,8 @@ class ListMyFollowingsApiView(APIView):
         try:
             followings = my_followings(profile=request.user.profile)
         except Exception as ex:
-            raise APIException(
-                f'Database Error >> {ex}'
-            )
+            logger.warning(f'Database Error >> {ex}')
+            raise APIException(f'Database Error >> {ex}')
 
         return get_paginated_response_context(
             pagination_class=self.Pagination,
@@ -335,7 +331,7 @@ class ListMyFollowingsApiView(APIView):
 
 
 class OtpVerificationApiView(APIView):
-    # TODO: Permission for only users which not activated yet
+
 
     class InputOtpSerializer(serializers.Serializer):
         otp = serializers.IntegerField(required=True)
