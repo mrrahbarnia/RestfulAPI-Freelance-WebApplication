@@ -1,13 +1,11 @@
-import logging
-
-from rest_framework.exceptions import APIException
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
 from rest_framework import (
     status,
     serializers
 )
+from rest_framework.exceptions import APIException
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 
 from core.selectors.skills import (
     get_categories,
@@ -23,8 +21,6 @@ from .models import (
 )
 from .permission import IsAdminOrReadOnly
 
-logger = logging.getLogger(__name__)
-
 
 class CategoryApiView(APIView):
     permission_classes = [IsAdminOrReadOnly]
@@ -35,8 +31,9 @@ class CategoryApiView(APIView):
         def validate_name(self, name):
             if Category.objects.filter(name=name).exists():
                 raise serializers.ValidationError(
-                    'There is a category with the same name.'
+                    'There is a category with the provided name.'
                 )
+            return name
 
 
     class OutputCategorySerializer(serializers.ModelSerializer):
@@ -50,8 +47,9 @@ class CategoryApiView(APIView):
         try:
             categories = get_categories(name=None)
         except Exception as ex:
-            logger.warning(f'Database Error >> {ex}')
-            raise APIException(f'Database Error >> {ex}')
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
         response = self.OutputCategorySerializer(categories, many=True).data
 
         return Response(response, status=status.HTTP_200_OK)
@@ -68,8 +66,9 @@ class CategoryApiView(APIView):
                 name=serializer.validated_data.get('name')
             )
         except Exception as ex:
-            logger.warning(f'Database Error >> {ex}')
-            raise APIException(f'Database Error >> {ex}')
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
         response = self.OutputCategorySerializer(category).data
 
         return Response(response, status=status.HTTP_201_CREATED)
@@ -77,7 +76,6 @@ class CategoryApiView(APIView):
 
 class SkillApiView(APIView):
     permission_classes = [IsAdminOrReadOnly]
-
 
     class InputSkillSerializer(serializers.Serializer):
 
@@ -93,7 +91,7 @@ class SkillApiView(APIView):
         def validate_name(self, name):
             if Skill.objects.filter(name=name).exists():
                 raise serializers.ValidationError(
-                    'There is a skill with the same name.'
+                    'There is a skill with the same name'
                 )
             return name
 
@@ -109,8 +107,9 @@ class SkillApiView(APIView):
         try:
             skills = get_skills(category=None)
         except Exception as ex:
-            logger.warning(f'Database Error >> {ex}')
-            raise APIException(f'Database Error >> {ex}')
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
         response = self.OutputSkillSerializer(skills, many=True).data
         return Response(response, status=status.HTTP_200_OK)
 
@@ -130,7 +129,8 @@ class SkillApiView(APIView):
                 category=category
             )
         except Exception as ex:
-            logger.warning(f'Database Error >> {ex}')
-            raise APIException(f'Database Error >> {ex}')
+            raise APIException(
+                f'Database Error >> {ex}'
+            )
         response = self.OutputSkillSerializer(skill).data
         return Response(response, status=status.HTTP_201_CREATED)
