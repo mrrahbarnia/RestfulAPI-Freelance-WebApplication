@@ -39,7 +39,7 @@ class CategoryApiView(APIView):
     class OutputCategorySerializer(serializers.ModelSerializer):
 
         class Meta:
-            model = Skill
+            model = Category
             fields = ('name',)
 
     @extend_schema(responses=OutputCategorySerializer)

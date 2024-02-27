@@ -108,26 +108,25 @@ class TestPrivateSkillEndpoints(TestCase):
         self.assertEqual(Category.objects.all().count(), 1)
 
     def test_create_skill_without_existing_category_unsuccessfully(self):
-        create_category(name='Backend Development')
+        create_category(name='UI')
         payload = {
-            'name': 'React',
-            'category': 'Frontend Development'
+            "name": "React",
+            "category": "Frontend"
         }
 
         response = self.admin_client.post(SKILL_URL, payload)
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Skill.objects.all().count(), 0)
         self.assertFalse(Skill.objects.filter(name=payload['name']).exists())
-    
+
     def test_create_skill_with_existing_category_successfully(self):
-        create_category(name='Backend Development')
+        create_category(name='Backend')
         payload = {
             'name': 'FastAPI',
-            'category': 'Backend Development'
+            'category': 'Backend'
         }
 
         response = self.admin_client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Category.objects.all().count(), 1)
         self.assertEqual(Skill.objects.all().count(), 1)

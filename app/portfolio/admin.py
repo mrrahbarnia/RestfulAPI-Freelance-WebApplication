@@ -1,9 +1,9 @@
-from django.contrib import admin
+# from django.contrib import admin
 
-from .models import (
-    Portfolio,
-    PortfolioSkill
-)
+# from .models import (
+#     Portfolio,
+#     PortfolioSkill
+# )
 
-admin.site.register(Portfolio)
-admin.site.register(PortfolioSkill)
+# admin.site.register(Portfolio)
+# admin.site.register(PortfolioSkill)

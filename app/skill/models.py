@@ -3,10 +3,10 @@ from django.db import models
 from core.timestamp import TimeStamp
 
 
-class Skill(TimeStamp):
+class Skill(models.Model):
     name = models.CharField(max_length=250, unique=True)
     category = models.ForeignKey(
-        'Category', models.ForeignKey, related_name='skill_category'
+        'Category', on_delete=models.CASCADE, related_name='skill_category'
     )
     status = models.BooleanField(default=False)
 
@@ -14,7 +14,7 @@ class Skill(TimeStamp):
         return self.name
 
 
-class Category(TimeStamp):
+class Category(models.Model):
     name = models.CharField(max_length=250, unique=True)
     status = models.BooleanField(default=False)
 
