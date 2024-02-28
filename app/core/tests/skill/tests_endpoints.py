@@ -24,7 +24,7 @@ class TestPublicSkillEndpoints(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
     
-    def test_list_skills_with_unauthenticated_user_successfully(self):
+    def test_list_published_skills_with_unauthenticated_user_successfully(self):
         cat = create_category(name='Backend Developer')
         skill1 = create_skill(name='Django', category=cat)
         skill1.status = True
@@ -39,7 +39,7 @@ class TestPublicSkillEndpoints(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
-    def test_list_categories_with_unauthenticated_user_successfully(self):
+    def test_list_published_categories_with_unauthenticated_user_successfully(self):
         cat1 = create_category(name='Backend Development')
         cat1.status = True
         cat1.save()
@@ -55,7 +55,7 @@ class TestPublicSkillEndpoints(TestCase):
     def test_create_category_with_unauthenticated_user(self):
         payload = {'name': 'UI'}
 
-        response = self.client.post(PUB_CATEGORY_URL, payload)
+        response = self.client.post(CATEGORY_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -65,7 +65,7 @@ class TestPublicSkillEndpoints(TestCase):
             'category': 'FastAPI'
         }
 
-        response = self.client.post(PUB_SKILL_URL, payload)
+        response = self.client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
@@ -115,7 +115,7 @@ class TestPrivateSkillEndpoints(TestCase):
     def test_create_category_with_normal_user(self):
         payload = {'name': 'UI'}
 
-        response = self.normal_client.post(PUB_CATEGORY_URL, payload)
+        response = self.normal_client.post(CATEGORY_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
@@ -125,14 +125,14 @@ class TestPrivateSkillEndpoints(TestCase):
             'category': 'FastAPI'
         }
 
-        response = self.normal_client.post(PUB_SKILL_URL, payload)
+        response = self.normal_client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_category_with_admin_user_successfully(self):
         payload = {'name': 'UI'}
 
-        response = self.admin_client.post(PUB_CATEGORY_URL, payload)
+        response = self.admin_client.post(CATEGORY_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Category.objects.all().count(), 1)
@@ -144,7 +144,7 @@ class TestPrivateSkillEndpoints(TestCase):
             "category": "Frontend"
         }
 
-        response = self.admin_client.post(PUB_SKILL_URL, payload)
+        response = self.admin_client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(Skill.objects.filter(name=payload['name']).exists())
@@ -157,7 +157,7 @@ class TestPrivateSkillEndpoints(TestCase):
             'category': 'Backend'
         }
 
-        response = self.admin_client.post(PUB_SKILL_URL, payload)
+        response = self.admin_client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Skill.objects.all().count(), 1)
@@ -219,6 +219,7 @@ class TestPrivateSkillEndpoints(TestCase):
 
         response = self.admin_client.get(CATEGORY_URL)
 
+        self.assertEqual(len(eval(response.content)), 2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_skills_by_admin_user_successfully(self):
@@ -228,4 +229,5 @@ class TestPrivateSkillEndpoints(TestCase):
 
         response = self.admin_client.get(SKILL_URL)
 
+        self.assertEqual(len(eval(response.content)), 2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

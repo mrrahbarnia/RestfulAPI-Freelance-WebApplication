@@ -24,3 +24,9 @@ def get_published_skills(*, category:Category|None) -> QuerySet[Skill]:
 def category_choices() -> QuerySet[Category]:
     # TODO: Caching
     return list(Category.objects.filter(status=True).values_list('name', flat=True))
+
+def get_all_categories() -> QuerySet[Category]:
+    return Category.objects.all()
+
+def get_all_skills() -> QuerySet[Skill]:
+    return Skill.objects.all()
