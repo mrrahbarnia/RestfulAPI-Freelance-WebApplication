@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import (
     status,
     serializers
@@ -14,13 +15,18 @@ from core.selectors.skills import (
 )
 from core.services.skills import (
     create_category,
-    create_skill
+    create_skill,
+    publish_category,
+    publish_skill
 )
 from .models import (
     Skill,
     Category
 )
-from .permission import IsAdminOrReadOnly
+from .permission import (
+    IsAdminOrReadOnly,
+    IsAdmin
+)
 
 
 class CategoryApiView(APIView):
@@ -38,10 +44,17 @@ class CategoryApiView(APIView):
 
 
     class OutputCategorySerializer(serializers.ModelSerializer):
+        # publish_url = serializers.SerializerMethodField()
 
         class Meta:
             model = Category
-            fields = ('name',)
+            fields = ('name', )
+
+        # def get_publish_url(self, category):
+        #     request = self.context.get('request')
+        #     path = reverse('skill:category_detail', args=[category.slug])
+        #     return request.build_absolute_uri(path)
+
 
     @extend_schema(responses=OutputCategorySerializer)
     def get(self, request, *args, **kwargs):
@@ -51,7 +64,7 @@ class CategoryApiView(APIView):
             raise APIException(
                 f'Database Error >> {ex}'
             )
-        response = self.OutputCategorySerializer(categories, many=True).data
+        response = self.OutputCategorySerializer(categories, many=True, context={'request': request}).data
 
         return Response(response, status=status.HTTP_200_OK)
 
@@ -136,3 +149,29 @@ class SkillApiView(APIView):
             )
         response = self.OutputSkillSerializer(skill).data
         return Response(response, status=status.HTTP_201_CREATED)
+
+
+class CategoryDetailApiView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request, slug=None, *args, **kwargs):
+        try:
+            publish_category(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_200_OK)
+
+
+class SkillDetailApiView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request, slug=None, *args, **kwargs):
+        try:
+            publish_skill(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_200_OK)

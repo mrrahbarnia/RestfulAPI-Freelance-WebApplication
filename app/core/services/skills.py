@@ -1,4 +1,5 @@
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from skill.models import (
@@ -18,7 +19,7 @@ def publish_category(*, slug:str) -> None:
         category.status = True
         category.save()
     except Category.DoesNotExist:
-        serializers.ValidationError(
+        raise ValidationError(
             {'detail': 'There is no category with the given slug.'}
         )
 
@@ -28,6 +29,6 @@ def publish_skill(*, slug:str) -> None:
         skill.status = True
         skill.save()
     except Skill.DoesNotExist:
-        serializers.ValidationError(
+        raise ValidationError(
             {'detail': 'There is no skill with the given slug.'}
         )

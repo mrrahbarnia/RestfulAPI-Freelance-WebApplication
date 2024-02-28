@@ -159,6 +159,7 @@ class TestPrivateSkillEndpoints(TestCase):
         response = self.normal_client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        sample_category.refresh_from_db()
         self.assertFalse(sample_category.status)
 
     def test_publish_skill_by_normal_user_unsuccessfully(self):
@@ -169,6 +170,7 @@ class TestPrivateSkillEndpoints(TestCase):
         response = self.normal_client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        sample_skill.refresh_from_db()
         self.assertFalse(sample_skill.status)
 
     def test_publish_category_by_admin_user_successfully(self):
@@ -179,6 +181,7 @@ class TestPrivateSkillEndpoints(TestCase):
         response = self.admin_client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        sample_category.refresh_from_db()
         self.assertTrue(sample_category.status)
 
     def test_publish_skill_by_admin_user_successfully(self):
@@ -189,4 +192,5 @@ class TestPrivateSkillEndpoints(TestCase):
         response = self.admin_client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        sample_skill.refresh_from_db()
         self.assertTrue(sample_skill.status)
