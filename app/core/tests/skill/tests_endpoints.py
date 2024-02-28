@@ -66,6 +66,26 @@ class TestPublicSkillEndpoints(TestCase):
         response = self.client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_publish_category_by_unauthenticated_user_unsuccessfully(self):
+        category = create_category(name='Backend')
+
+        url = reverse('skill:category_detail', args=[category.slug])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertFalse(category.status)
+
+
+    def test_publish_skill_by_unauthenticated_user_unsuccessfully(self):
+        category = create_category(name='Backend')
+        skill = create_skill(category=category, name='Django')
+
+        url = reverse('skill:skill_detail', args=[skill.slug])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertFalse(skill.status)
 
 
 class TestPrivateSkillEndpoints(TestCase):
@@ -131,3 +151,42 @@ class TestPrivateSkillEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Skill.objects.all().count(), 1)
+    
+    def test_publish_category_by_normal_user_unsuccessfully(self):
+        sample_category = create_category(name='Backend')
+
+        url = reverse('skill:category_detail', args=[sample_category.slug])
+        response = self.normal_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(sample_category.status)
+
+    def test_publish_skill_by_normal_user_unsuccessfully(self):
+        sample_category = create_category(name='Backend')
+        sample_skill = create_skill(name='Django', category=sample_category)
+
+        url = reverse('skill:skill_detail', args=[sample_skill.slug])
+        response = self.normal_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(sample_skill.status)
+
+    def test_publish_category_by_admin_user_successfully(self):
+        sample_category = create_category(name='Backend')
+        self.assertFalse(sample_category.status)
+
+        url = reverse('skill:category_detail', args=[sample_category.slug])
+        response = self.admin_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(sample_category.status)
+
+    def test_publish_skill_by_admin_user_successfully(self):
+        sample_category = create_category(name='Backend')
+        sample_skill = create_skill(name='Django', category=sample_category)
+
+        url = reverse('skill:skill_detail', args=[sample_skill.slug])
+        response = self.admin_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(sample_skill.status)
