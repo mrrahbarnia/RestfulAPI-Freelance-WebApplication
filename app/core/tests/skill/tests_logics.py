@@ -11,8 +11,8 @@ from ...services.skills import (
     publish_skill
 )
 from ...selectors.skills import (
-    get_categories,
-    get_skills
+    get_published_categories,
+    get_published_skills,
 )
 
 class TestSkillLogics(TestCase):
@@ -28,7 +28,7 @@ class TestSkillLogics(TestCase):
 
         self.assertIn(sample_skill, Skill.objects.all())
     
-    def test_get_categories(self):
+    def test_get_published_categories(self):
         cat1 = create_category(name='Backend Development')
         cat1.status = True
         cat1.save()
@@ -36,12 +36,12 @@ class TestSkillLogics(TestCase):
         cat2.status = True
         cat2.save()
 
-        categories = get_categories(name=None)
+        categories = get_published_categories(name=None)
         self.assertIn(cat1, categories)
         self.assertIn(cat2, categories)
         self.assertEqual(categories.count(), 2)
 
-    def test_get_skills(self):
+    def test_get_published_skills(self):
         cat = create_category(name='Backend Development')
         empty_cat = create_category(name='Frontend Development')
         skill1 = create_skill(name='Django', category=cat)
@@ -51,15 +51,15 @@ class TestSkillLogics(TestCase):
         skill2.status = True
         skill2.save()
 
-        skills = get_skills(category=None)
+        skills = get_published_skills(category=None)
         self.assertIn(skill1, skills)
         self.assertIn(skill2, skills)
         self.assertEqual(skills.count(), 2)
 
-        skills = get_skills(category=cat)
+        skills = get_published_skills(category=cat)
         self.assertEqual(skills.count(), 2)
 
-        skills = get_skills(category=empty_cat)
+        skills = get_published_skills(category=empty_cat)
         self.assertEqual(skills.count(), 0)
     
     def test_publish_category(self):

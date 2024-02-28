@@ -5,7 +5,7 @@ from skill.models import (
     Skill
 )
 
-def get_categories(*, name:str|None) -> QuerySet[Category]:
+def get_published_categories(*, name:str|None) -> QuerySet[Category]:
     if name:
         try:
             category = Category.objects.get(name=name)
@@ -15,7 +15,7 @@ def get_categories(*, name:str|None) -> QuerySet[Category]:
             pass
     return Category.objects.filter(status=True)
 
-def get_skills(*, category:Category|None) -> QuerySet[Skill]:
+def get_published_skills(*, category:Category|None) -> QuerySet[Skill]:
     if category:
         return Skill.objects.filter(category=category, status=True)
     else:

@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema
 
 from core.selectors.skills import (
-    get_categories,
-    get_skills,
+    get_published_categories,
+    get_published_skills,
     category_choices
 )
 from core.services.skills import (
@@ -59,7 +59,7 @@ class CategoryApiView(APIView):
     @extend_schema(responses=OutputCategorySerializer)
     def get(self, request, *args, **kwargs):
         try:
-            categories = get_categories(name=None)
+            categories = get_published_categories(name=None)
         except Exception as ex:
             raise APIException(
                 f'Database Error >> {ex}'
@@ -120,7 +120,7 @@ class SkillApiView(APIView):
     @extend_schema(responses=OutputSkillSerializer)
     def get(self, request, *args, **kwargs):
         try:
-            skills = get_skills(category=None)
+            skills = get_published_skills(category=None)
         except Exception as ex:
             raise APIException(
                 f'Database Error >> {ex}'
@@ -136,7 +136,7 @@ class SkillApiView(APIView):
         serializer = self.InputSkillSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            category = get_categories(
+            category = get_published_categories(
                 name=serializer.validated_data.get('category')
             )
             skill = create_skill(
