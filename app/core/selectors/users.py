@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.db.models import QuerySet
 
+from skill.models import Skill
 from users.models import (
     BaseUser,
     Profile,
@@ -34,3 +35,8 @@ def my_followings(*, profile:Profile) -> QuerySet[Subscription]:
         ).select_related('target').filter(follower=profile)
         cache.set(key=f'followings_{profile}', value=followings, timeout=None)
         return followings
+
+def my_skills(*, user:BaseUser) -> QuerySet[Skill]:
+    # TODO: caching
+    my_skills = Skill.objects.filter(skill_profile__user=user)
+    return my_skills

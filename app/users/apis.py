@@ -18,7 +18,8 @@ from core.selectors.users import (
     get_profile,
     get_freelancers,
     my_followers,
-    my_followings
+    my_followings,
+    my_skills
 )
 from core.services.users import (
     register,
@@ -30,6 +31,7 @@ from core.services.users import (
     resend_otp,
     select_skill
 )
+from skill.models import Skill
 from .models import (
     BaseUser,
     Profile,
@@ -387,3 +389,27 @@ class SelectSkillApiView(APIView):
                 f'Database Error >> {ex}'
             )
         return Response(status=status.HTTP_200_OK)
+
+
+class MySkillsApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    class MySkillsSerializer(serializers.ModelSerializer):
+
+        class Meta:
+            model = Skill
+            fields = ('name', )
+
+    def get(self, request, *args, **kwargs):
+        try:
+            qs = my_skills(user=request.user)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        response = self.MySkillsSerializer(
+            qs, many=True, context={'request': request}
+        ).data
+        
+        return Response(response, status=status.HTTP_200_OK)

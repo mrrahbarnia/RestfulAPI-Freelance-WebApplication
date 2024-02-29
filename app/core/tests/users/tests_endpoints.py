@@ -105,7 +105,7 @@ class TestPublicUserEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
-    def test_list_my_followers_with_unauthenticated_user(self):
+    def test_list_my_followings_with_unauthenticated_user(self):
         response = self.client.get(FOLLOWINGS_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -308,9 +308,9 @@ class TestPrivateUserEndpoints(TestCase):
         skill1 = create_skill(category=sample_category, name='Django')
         skill2 = create_skill(category=sample_category, name='FastAPI')
         skill3 = create_skill(category=sample_category, name='Node.JS')
-        publish_skill(skill1.slug)
-        publish_skill(skill2.slug)
-        publish_skill(skill3.slug)
+        publish_skill(slug=skill1.slug)
+        publish_skill(slug=skill2.slug)
+        publish_skill(slug=skill3.slug)
 
         skills_urls = [
             reverse('users:select_skill', args=[skill1.slug]),
@@ -323,3 +323,4 @@ class TestPrivateUserEndpoints(TestCase):
         response = self.client.get(MY_SKILLS)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
