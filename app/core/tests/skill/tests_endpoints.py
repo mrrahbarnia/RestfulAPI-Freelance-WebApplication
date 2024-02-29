@@ -161,7 +161,10 @@ class TestPrivateSkillEndpoints(TestCase):
         self.assertEqual(Category.objects.all().count(), 1)
 
     def test_create_skill_without_existing_category_unsuccessfully(self):
-        create_category(name='UI')
+        sample_category = create_category(name='UI')
+        sample_category.status = True
+        sample_category.save()
+        sample_category.refresh_from_db()
         payload = {
             "name": "React",
             "category": "Frontend"
@@ -242,7 +245,7 @@ class TestPrivateSkillEndpoints(TestCase):
 
         response = self.admin_client.get(CATEGORY_URL)
 
-        self.assertEqual(len(eval(response.content)), 2)
+        self.assertEqual(len(response.data), 2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_all_skills_by_admin_user_successfully(self):
@@ -252,7 +255,7 @@ class TestPrivateSkillEndpoints(TestCase):
 
         response = self.admin_client.get(SKILL_URL)
 
-        self.assertEqual(len(eval(response.content)), 2)
+        self.assertEqual(len(response.data), 2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_unpublish_category_with_normal_user_unsuccessfully(self):
@@ -283,11 +286,16 @@ class TestPrivateSkillEndpoints(TestCase):
         sample_category.status = True
         sample_category.save()
         sample_category.refresh_from_db()
+
         url = reverse('skill:unpublish_category', args=[sample_category.slug])
+
+        self.assertTrue(sample_category.status)
 
         response = self.admin_client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        sample_category.refresh_from_db()
+        self.assertFalse(sample_category.status)
 
     def test_unpublish_skill_with_admin_user_successfully(self):
         sample_category = create_category(name='Backend')
@@ -295,8 +303,13 @@ class TestPrivateSkillEndpoints(TestCase):
         sample_skill.status = True
         sample_skill.save()
         sample_skill.refresh_from_db()
+
         url = reverse('skill:unpublish_skill', args=[sample_skill.slug])
+
+        self.assertTrue(sample_skill.status)
 
         response = self.admin_client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        sample_skill.refresh_from_db()
+        self.assertFalse(sample_skill.status)

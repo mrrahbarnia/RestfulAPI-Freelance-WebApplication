@@ -32,3 +32,23 @@ def publish_skill(*, slug:str) -> None:
         raise ValidationError(
             {'detail': 'There is no skill with the given slug.'}
         )
+
+def unpublish_category(*, slug:str) -> None:
+    try:
+        category = Category.objects.get(slug=slug)
+        category.status = False
+        category.save()
+    except Category.DoesNotExist:
+        raise ValidationError(
+            {'detail': 'There is no category with the given slug.'}
+        )
+
+def unpublish_skill(*, slug:str) -> None:
+    try:
+        skill = Skill.objects.get(slug=slug)
+        skill.status = False
+        skill.save()
+    except Skill.DoesNotExist:
+        raise ValidationError(
+            {'detail': 'There is no skill with the given slug.'}
+        )

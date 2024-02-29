@@ -1,4 +1,5 @@
 from django.db.models import QuerySet
+from rest_framework import serializers
 
 from skill.models import (
     Category,
@@ -12,7 +13,9 @@ def get_published_categories(*, name:str|None) -> QuerySet[Category]:
             return category
         except Category.DoesNotExist:
             # TODO: Logging
-            pass
+            raise serializers.ValidationError(
+                'There is no existing category with the provided name.'
+            )
     return Category.objects.filter(status=True)
 
 def get_published_skills(*, category:Category|None) -> QuerySet[Skill]:

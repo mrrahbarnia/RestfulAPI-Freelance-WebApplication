@@ -19,7 +19,9 @@ from core.services.skills import (
     create_category,
     create_skill,
     publish_category,
-    publish_skill
+    publish_skill,
+    unpublish_category,
+    unpublish_skill
 )
 from .models import (
     Skill,
@@ -32,10 +34,16 @@ class PubCategoryApiView(APIView):
 
 
     class OutputCategorySerializer(serializers.ModelSerializer):
+        unpublish_url = serializers.SerializerMethodField()
 
         class Meta:
             model = Category
-            fields = ('name', )
+            fields = ('name', 'unpublish_url')
+
+        def get_unpublish_url(self, category):
+            request = self.context.get('request')
+            path = reverse('skill:unpublish_category', args=[category.slug])
+            return request.build_absolute_uri(path)
 
     @extend_schema(responses=OutputCategorySerializer)
     def get(self, request, *args, **kwargs):
@@ -55,10 +63,16 @@ class PubSkillApiView(APIView):
 
 
     class OutputSkillSerializer(serializers.ModelSerializer):
+        unpublish_url = serializers.SerializerMethodField()
 
         class Meta:
             model = Skill
-            fields = ('name', )
+            fields = ('name', 'unpublish_url')
+        
+        def get_unpublish_url(self, skill):
+            request = self.context.get('request')
+            path = reverse('skill:unpublish_skill', args=[skill.slug])
+            return request.build_absolute_uri(path)
 
     @extend_schema(responses=OutputSkillSerializer)
     def get(self, request, *args, **kwargs):
@@ -68,7 +82,7 @@ class PubSkillApiView(APIView):
             raise APIException(
                 f'Database Error >> {ex}'
             )
-        response = self.OutputSkillSerializer(skills, many=True).data
+        response = self.OutputSkillSerializer(skills, many=True, context={'request': request}).data
         return Response(response, status=status.HTTP_200_OK)
 
 
@@ -189,7 +203,7 @@ class SkillApiView(APIView):
             request = self.context.get('request')
             path = reverse('skill:skill_detail', args=[skill.slug])
             return request.build_absolute_uri(path)
-    
+
     @extend_schema(responses=OutputSkillSerializer)
     def get(self, request, *args, **kwargs):
         try:
@@ -217,8 +231,34 @@ class SkillApiView(APIView):
                 category=category
             )
         except Exception as ex:
-            raise APIException(
+            raise serializers.ValidationError(
                 f'Database Error >> {ex}'
             )
         response = self.OutputSkillSerializer(skill, context={'request': request}).data
         return Response(response, status=status.HTTP_201_CREATED)
+
+
+class UnpublishCategoryApiView(APIView):
+    permission_classes = [IsAdmin]
+
+    def delete(self, request, slug, *args, **kwargs):
+        try:
+            unpublish_category(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UnpublishSkillApiView(APIView):
+    permission_classes = [IsAdmin]
+
+    def delete(self, request, slug, *args, **kwargs):
+        try:
+            unpublish_skill(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
