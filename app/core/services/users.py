@@ -7,6 +7,8 @@ from django.db import transaction
 from django.core.cache import cache
 from rest_framework.exceptions import APIException
 from rest_framework import serializers
+
+from skill.models import Skill
 from users.models import (
     BaseUser,
     Profile,
@@ -137,3 +139,14 @@ def verify_otp(*, otp:int) -> None:
             cache.delete(f'otp_{otp}_{phone_number}')
     else:
         raise APIException('The OTP has been expired or not valid.Get a new one...')
+
+def select_skill(*, user:BaseUser, skill:str) -> None:
+    profile = Profile.objects.get(user=user)
+    skill = Skill.objects.get(slug=skill)
+    if skill.status:
+        profile.skills.add(skill)
+        profile.save()
+    else:
+        raise serializers.ValidationError(
+            'The provided skill is not published yet.'
+        )

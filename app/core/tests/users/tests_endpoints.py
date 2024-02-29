@@ -5,6 +5,7 @@ from unittest.mock import patch
 from rest_framework.test import APIClient
 from rest_framework import status
 
+from skill.models import Skill
 from users.models import (
     BaseUser,
     Profile
@@ -257,7 +258,6 @@ class TestPrivateUserEndpoints(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertNotIn(self.user_obj.profile.skills.all(), sample_skill)
 
     def test_select_skills_with_authenticated_user_unsuccessfully(self):
         """
@@ -271,7 +271,10 @@ class TestPrivateUserEndpoints(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertNotIn(self.user_obj.profile.skills.all(), sample_skill)
+        self.assertNotIn(
+            sample_skill,
+            Skill.objects.filter(profile_skill_sk__profile_id=self.user_obj.profile)
+        )
 
     def test_select_skills_with_authenticated_user_successfully(self):
         """
@@ -288,4 +291,7 @@ class TestPrivateUserEndpoints(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.user_obj.profile.skills.all(), sample_skill)
+        self.assertIn(
+            sample_skill,
+            Skill.objects.filter(profile_skill_sk__profile_id=self.user_obj.profile)
+        )

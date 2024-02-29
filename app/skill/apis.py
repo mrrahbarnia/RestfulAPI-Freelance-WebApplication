@@ -64,14 +64,20 @@ class PubSkillApiView(APIView):
 
     class OutputSkillSerializer(serializers.ModelSerializer):
         unpublish_url = serializers.SerializerMethodField()
+        select_user_skill_url = serializers.SerializerMethodField()
 
         class Meta:
             model = Skill
-            fields = ('name', 'unpublish_url')
+            fields = ('name', 'unpublish_url', 'select_user_skill_url')
         
         def get_unpublish_url(self, skill):
             request = self.context.get('request')
             path = reverse('skill:unpublish_skill', args=[skill.slug])
+            return request.build_absolute_uri(path)
+
+        def get_select_user_skill_url(self, skill):
+            request = self.context.get('request')
+            path = reverse('users:select_skill', args=[skill.slug])
             return request.build_absolute_uri(path)
 
     @extend_schema(responses=OutputSkillSerializer)

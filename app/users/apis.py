@@ -27,7 +27,8 @@ from core.services.users import (
     subscribe,
     unsubscribe,
     verify_otp,
-    resend_otp
+    resend_otp,
+    select_skill
 )
 from .models import (
     BaseUser,
@@ -335,7 +336,7 @@ class ListMyFollowingsApiView(APIView):
 
 
 class OtpVerificationApiView(APIView):
-    # TODO: Permission for only users which not activated yet
+
 
     class InputOtpSerializer(serializers.Serializer):
         otp = serializers.IntegerField(required=True)
@@ -370,3 +371,19 @@ class ResendOtpApiView(APIView):
             {'detail': 'OTP was resent successfully.'},
             status=status.HTTP_200_OK
         )
+
+
+class SelectSkillApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, skill, *args, **kwargs):
+        try:
+            select_skill(
+                user=request.user,
+                skill=skill
+            )
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_200_OK)
