@@ -118,7 +118,7 @@ class CategoryApiView(APIView):
 
         class Meta:
             model = Category
-            fields = ('name', 'publish_url')
+            fields = ('name', 'status', 'publish_url')
         
         def get_publish_url(self, category):
             request = self.context.get('request')
@@ -183,7 +183,7 @@ class SkillApiView(APIView):
 
         class Meta:
             model = Skill
-            fields = ('name', 'publish_url')
+            fields = ('name', 'status', 'publish_url')
         
         def get_publish_url(self, skill):
             request = self.context.get('request')

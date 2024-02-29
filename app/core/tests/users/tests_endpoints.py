@@ -9,6 +9,10 @@ from users.models import (
     BaseUser,
     Profile
 )
+from ...services.skills import (
+    create_category,
+    create_skill
+)
 from ...services.users import (
     register,
     subscribe
@@ -134,6 +138,14 @@ class TestPublicUserEndpoints(TestCase):
 
         self.assertTrue(cache.get(f'otp_{otp}_{phone_number}'))
 
+    # def test_select_skills_with_unauthenticated_user_unsuccessfully(self):
+    #     sample_category = create_category(name='Backend Development')
+    #     sample_skill1 = create_skill(category=sample_category, name='Django')
+    #     sample_skill2 = create_skill(category=sample_category, name='FastAPI')
+
+    #     url = reverse('users:select_skill', args=[sample_skill1.slug])
+    #     self.client.post()
+
 
 class TestPrivateUserEndpoints(TestCase):
     """Test endpoints with authenticated client."""
@@ -225,3 +237,17 @@ class TestPrivateUserEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
+    
+    # def test_select_skills_with_authenticated_user_unsuccessfully(self):
+    #     """
+    #     Selecting skills from none existing skills
+    #     with authenticated user unsuccessfully.
+    #     """
+    #     pass
+
+    # def test_select_skills_with_authenticated_user_successfully(self):
+    #     """
+    #     Selecting skills from existing skills
+    #     with authenticated user successfully.
+    #     """
+    #     pass
