@@ -138,13 +138,17 @@ class TestPublicUserEndpoints(TestCase):
 
         self.assertTrue(cache.get(f'otp_{otp}_{phone_number}'))
 
-    # def test_select_skills_with_unauthenticated_user_unsuccessfully(self):
-    #     sample_category = create_category(name='Backend Development')
-    #     sample_skill1 = create_skill(category=sample_category, name='Django')
-    #     sample_skill2 = create_skill(category=sample_category, name='FastAPI')
+    def test_select_skills_with_unauthenticated_user_unsuccessfully(self):
+        sample_category = create_category(name='Backend Development')
+        sample_skill = create_skill(category=sample_category, name='Django')
+        sample_skill.status = True
+        sample_skill.save()
+        sample_skill.refresh_from_db()
 
-    #     url = reverse('users:select_skill', args=[sample_skill1.slug])
-    #     self.client.post()
+        url = reverse('users:select_skill', args=[sample_skill.slug])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestPrivateUserEndpoints(TestCase):
@@ -238,16 +242,50 @@ class TestPrivateUserEndpoints(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
     
-    # def test_select_skills_with_authenticated_user_unsuccessfully(self):
-    #     """
-    #     Selecting skills from none existing skills
-    #     with authenticated user unsuccessfully.
-    #     """
-    #     pass
+    def test_select_skills_with_authenticated_user_unsuccessfully(self):
+        """
+        Selecting skills from none existing skills
+        with authenticated user unsuccessfully.
+        """
+        sample_category = create_category(name='Backend Development')
+        sample_skill = create_skill(category=sample_category, name='Django')
+        sample_skill.status = True
+        sample_skill.save()
+        sample_skill.refresh_from_db()
 
-    # def test_select_skills_with_authenticated_user_successfully(self):
-    #     """
-    #     Selecting skills from existing skills
-    #     with authenticated user successfully.
-    #     """
-    #     pass
+        url = reverse('users:select_skill', args=['FastAPI'])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn(self.user_obj.profile.skills.all(), sample_skill)
+
+    def test_select_skills_with_authenticated_user_unsuccessfully(self):
+        """
+        Selecting skills from unpublished skills
+        with authenticated user unsuccessfully.
+        """
+        sample_category = create_category(name='Backend Development')
+        sample_skill = create_skill(category=sample_category, name='Django')
+
+        url = reverse('users:select_skill', args=[sample_skill.slug])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertNotIn(self.user_obj.profile.skills.all(), sample_skill)
+
+    def test_select_skills_with_authenticated_user_successfully(self):
+        """
+        Selecting skills from published skills
+        with authenticated user successfully.
+        """
+        sample_category = create_category(name='Backend Development')
+        sample_skill = create_skill(category=sample_category, name='Django')
+        sample_skill.status = True
+        sample_skill.save()
+        sample_skill.refresh_from_db()
+
+        url = reverse('users:select_skill', args=[sample_skill.slug])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(self.user_obj.profile.skills.all(), sample_skill)
