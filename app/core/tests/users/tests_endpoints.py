@@ -12,7 +12,8 @@ from users.models import (
 )
 from ...services.skills import (
     create_category,
-    create_skill
+    create_skill,
+    publish_skill
 )
 from ...services.users import (
     register,
@@ -26,6 +27,7 @@ FOLLOWERS_URL = reverse('users:followers')
 FOLLOWINGS_URL = reverse('users:followings')
 VERIFICATION_URL = reverse('users:verification')
 RESEND_OTP_URL = reverse('users:resend_otp')
+MY_SKILLS = reverse('users:my_skills')
 
 
 class TestPublicUserEndpoints(TestCase):
@@ -148,6 +150,11 @@ class TestPublicUserEndpoints(TestCase):
 
         url = reverse('users:select_skill', args=[sample_skill.slug])
         response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_get_my_skills_with_unauthenticated_user_unsuccessfully(self):
+        response = self.client.get(MY_SKILLS)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -295,3 +302,24 @@ class TestPrivateUserEndpoints(TestCase):
             sample_skill,
             Skill.objects.filter(profile_skill_sk__profile_id=self.user_obj.profile)
         )
+    
+    def test_get_only_my_skills_with_authenticated_user_successfully(self):
+        sample_category = create_category(name='Backend')
+        skill1 = create_skill(category=sample_category, name='Django')
+        skill2 = create_skill(category=sample_category, name='FastAPI')
+        skill3 = create_skill(category=sample_category, name='Node.JS')
+        publish_skill(skill1.slug)
+        publish_skill(skill2.slug)
+        publish_skill(skill3.slug)
+
+        skills_urls = [
+            reverse('users:select_skill', args=[skill1.slug]),
+            reverse('users:select_skill', args=[skill3.slug])
+        ]
+
+        for url in skills_urls:
+            self.client.get(url)
+
+        response = self.client.get(MY_SKILLS)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
