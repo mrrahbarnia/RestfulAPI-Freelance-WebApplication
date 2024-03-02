@@ -157,6 +157,15 @@ class TestPublicUserEndpoints(TestCase):
         response = self.client.get(MY_SKILLS)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_unselect_skill_with_unauthenticated_user_unsuccessfully(self):
+        sample_category = create_category(name='Backend')
+        sample_skill = create_skill(category=sample_category, name='Django')
+
+        url = reverse('users:unselect_skill', args=[sample_skill.slug])
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestPrivateUserEndpoints(TestCase):
@@ -324,3 +333,46 @@ class TestPrivateUserEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
+    
+    def test_unselect_skills_from_not_selected_ones_unsuccessfully(self):
+        sample_category = create_category(name='Backend')
+        sample_skill1 = create_skill(category=sample_category, name='Django')
+        sample_skill2 = create_skill(category=sample_category, name='FastAPI')
+
+        select_skill_url = reverse('users:select_skill', args=[sample_skill1.slug])
+        self.client.get(select_skill_url)
+        unselect_skill_url = reverse('users:unselect_skill', args=[sample_skill2.slug])
+        response = self.client.delete(unselect_skill_url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            sample_skill1,
+            Skill.objects.filter(profile_skill_sk__profile_id=self.user_obj.profile)
+        )
+        self.assertNotIn(
+            sample_skill2,
+            Skill.objects.filter(profile_skill_sk__profile_id=self.user_obj.profile)
+        )
+
+    def test_unselect_skills_from_selected_ones_successfully(self):
+        sample_category = create_category(name='Backend')
+        sample_skill1 = create_skill(category=sample_category, name='Django')
+        sample_skill2 = create_skill(category=sample_category, name='FastAPI')
+
+        select_skill1_url = reverse('users:select_skill', args=[sample_skill1.slug])
+        self.client.get(select_skill1_url)
+        select_skill2_url = reverse('users:select_skill', args=[sample_skill2.slug])
+        self.client.get(select_skill2_url)
+
+        unselect_skill_url = reverse('users:unselect_skill', args=[sample_skill2.slug])
+        response = self.client.delete(unselect_skill_url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertNotIn(
+            sample_skill2,
+            Skill.objects.filter(profile_skill_sk__profile_id=self.user_obj.profile)
+        )
+        self.assertIn(
+            sample_skill1,
+            Skill.objects.filter(profile_skill_sk__profile_id=self.user_obj.profile)
+        )

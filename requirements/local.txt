@@ -1,3 +1,4 @@
 -r base.txt
 
 django-silk==5.1.0
+django-extensions==3.2.3

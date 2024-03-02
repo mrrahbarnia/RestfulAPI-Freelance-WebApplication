@@ -56,6 +56,7 @@ MIDDLEWARE = [
 if DEBUG:
     MIDDLEWARE.append('silk.middleware.SilkyMiddleware')
     INSTALLED_APPS.append('silk')
+    INSTALLED_APPS.append('django_extensions')
 
 
 ROOT_URLCONF = 'app.urls'
@@ -88,7 +89,10 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
         'HOST': os.environ.get('DB_HOST'),
-        'PASSWORD': os.environ.get('DB_PASS')
+        'PASSWORD': os.environ.get('DB_PASS'),
+        'OPTIONS': {
+            'CONN_MAX_AGE': None
+        }
     }
 }
 
