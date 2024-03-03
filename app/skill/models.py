@@ -9,7 +9,7 @@ class Skill(TimeStamp):
     category = models.ForeignKey(
         'Category', on_delete=models.CASCADE, related_name='skill_category'
     )
-    status = models.BooleanField(default=False)
+    published = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name
@@ -18,7 +18,7 @@ class Skill(TimeStamp):
 class Category(TimeStamp):
     name = models.CharField(max_length=250, unique=True)
     slug = models.CharField(max_length=250, db_index=True)
-    status = models.BooleanField(default=False)
+    published = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name

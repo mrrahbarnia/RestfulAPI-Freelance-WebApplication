@@ -12,7 +12,8 @@ from skill.models import Skill
 from users.models import (
     BaseUser,
     Profile,
-    Subscription
+    Subscription,
+    ProfileSkill
 )
 
 def otp_generator():
@@ -140,13 +141,25 @@ def verify_otp(*, otp:int) -> None:
     else:
         raise APIException('The OTP has been expired or not valid.Get a new one...')
 
-def select_skill(*, user:BaseUser, skill:str) -> None:
+@transaction.atomic
+def select_skill(*, user:BaseUser, slug:str) -> None:
     profile = Profile.objects.get(user=user)
-    skill = Skill.objects.get(slug=skill)
-    if skill.status:
+    skill = Skill.objects.get(slug=slug)
+    if skill.published:
         profile.skills.add(skill)
         profile.save()
     else:
         raise serializers.ValidationError(
             'The provided skill is not published yet.'
+        )
+
+@transaction.atomic
+def unselect_skill(*, user:BaseUser, slug:str) -> None:
+    profile = Profile.objects.get(user=user)
+    user_skills = ProfileSkill.objects.filter(profile_id=profile).filter(skill_id__slug=slug)
+    if user_skills:
+        user_skills.delete()
+    else:
+        raise serializers.ValidationError(
+            'There is no selected skill with the provided slug.'
         )

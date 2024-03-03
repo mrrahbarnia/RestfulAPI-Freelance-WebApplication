@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.core.cache import cache
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -27,10 +28,10 @@ class TestPublicSkillEndpoints(TestCase):
     def test_list_published_skills_with_unauthenticated_user_successfully(self):
         cat = create_category(name='Backend Developer')
         skill1 = create_skill(name='Django', category=cat)
-        skill1.status = True
+        skill1.published = True
         skill1.save()
         skill2 = create_skill(name='FastAPI', category=cat)
-        skill2.status = True
+        skill2.published = True
         skill2.save()
         create_skill(name='Go', category=cat)
 
@@ -41,10 +42,10 @@ class TestPublicSkillEndpoints(TestCase):
 
     def test_list_published_categories_with_unauthenticated_user_successfully(self):
         cat1 = create_category(name='Backend Development')
-        cat1.status = True
+        cat1.published = True
         cat1.save()
         cat2 = create_category(name='UI')
-        cat2.status = True
+        cat2.published = True
         cat2.save()
 
         response = self.client.get(PUB_CATEGORY_URL)
@@ -76,7 +77,7 @@ class TestPublicSkillEndpoints(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertFalse(category.status)
+        self.assertFalse(category.published)
 
 
     def test_publish_skill_by_unauthenticated_user_unsuccessfully(self):
@@ -87,7 +88,7 @@ class TestPublicSkillEndpoints(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertFalse(skill.status)
+        self.assertFalse(skill.published)
 
     def test_get_all_categories_by_unauthenticated_user_unsuccessfully(self):
         response = self.client.get(CATEGORY_URL)
@@ -99,7 +100,7 @@ class TestPublicSkillEndpoints(TestCase):
 
     def test_unpublish_category_unauthenticated_unsuccessfully(self):
         sample_category = create_category(name='Backend')
-        sample_category.status = True
+        sample_category.published = True
         sample_category.save()
         sample_category.refresh_from_db()
         url = reverse('skill:unpublish_category', args=[sample_category.slug])
@@ -111,7 +112,7 @@ class TestPublicSkillEndpoints(TestCase):
     def test_unpublish_skill_unauthenticated_unsuccessfully(self):
         sample_category = create_category(name='Backend')
         sample_skill = create_skill(category=sample_category, name='Django')
-        sample_skill.status = True
+        sample_skill.published = True
         sample_skill.save()
         sample_skill.refresh_from_db()
         url = reverse('skill:unpublish_skill', args=[sample_skill.slug])
@@ -162,7 +163,7 @@ class TestPrivateSkillEndpoints(TestCase):
 
     def test_create_skill_without_existing_category_unsuccessfully(self):
         sample_category = create_category(name='UI')
-        sample_category.status = True
+        sample_category.published = True
         sample_category.save()
         sample_category.refresh_from_db()
         payload = {
@@ -176,18 +177,25 @@ class TestPrivateSkillEndpoints(TestCase):
         self.assertFalse(Skill.objects.filter(name=payload['name']).exists())
 
     def test_create_skill_with_existing_category_successfully(self):
-        create_category(name='Backend')
+        sample_category = create_category(name='Backend')
+        sample_category.published = True
+        sample_category.save()
+        sample_category.refresh_from_db()
 
         payload = {
             'name': 'FastAPI',
             'category': 'Backend'
         }
-
+        cache.set(
+            key='category_choices',
+            value=list(Category.objects.filter(published=True).values_list('name', flat=True)),
+            timeout=None
+        )
         response = self.admin_client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Skill.objects.all().count(), 1)
-    
+
     def test_publish_category_by_normal_user_unsuccessfully(self):
         sample_category = create_category(name='Backend')
 
@@ -196,7 +204,7 @@ class TestPrivateSkillEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         sample_category.refresh_from_db()
-        self.assertFalse(sample_category.status)
+        self.assertFalse(sample_category.published)
 
     def test_publish_skill_by_normal_user_unsuccessfully(self):
         sample_category = create_category(name='Backend')
@@ -207,18 +215,18 @@ class TestPrivateSkillEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         sample_skill.refresh_from_db()
-        self.assertFalse(sample_skill.status)
+        self.assertFalse(sample_skill.published)
 
     def test_publish_category_by_admin_user_successfully(self):
         sample_category = create_category(name='Backend')
-        self.assertFalse(sample_category.status)
+        self.assertFalse(sample_category.published)
 
         url = reverse('skill:category_detail', args=[sample_category.slug])
         response = self.admin_client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         sample_category.refresh_from_db()
-        self.assertTrue(sample_category.status)
+        self.assertTrue(sample_category.published)
 
     def test_publish_skill_by_admin_user_successfully(self):
         sample_category = create_category(name='Backend')
@@ -229,7 +237,7 @@ class TestPrivateSkillEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         sample_skill.refresh_from_db()
-        self.assertTrue(sample_skill.status)
+        self.assertTrue(sample_skill.published)
     
     def test_get_all_categories_by_normal_user_unsuccessfully(self):
         response = self.normal_client.get(CATEGORY_URL)
@@ -260,7 +268,7 @@ class TestPrivateSkillEndpoints(TestCase):
 
     def test_unpublish_category_with_normal_user_unsuccessfully(self):
         sample_category = create_category(name='Backend')
-        sample_category.status = True
+        sample_category.published = True
         sample_category.save()
         sample_category.refresh_from_db()
         url = reverse('skill:unpublish_category', args=[sample_category.slug])
@@ -272,7 +280,7 @@ class TestPrivateSkillEndpoints(TestCase):
     def test_unpublish_skill_with_normal_user_unsuccessfully(self):
         sample_category = create_category(name='Backend')
         sample_skill = create_skill(category=sample_category, name='Django')
-        sample_skill.status = True
+        sample_skill.published = True
         sample_skill.save()
         sample_skill.refresh_from_db()
         url = reverse('skill:unpublish_skill', args=[sample_skill.slug])
@@ -283,33 +291,32 @@ class TestPrivateSkillEndpoints(TestCase):
 
     def test_unpublish_category_with_admin_user_successfully(self):
         sample_category = create_category(name='Backend')
-        sample_category.status = True
+        sample_category.published = True
         sample_category.save()
         sample_category.refresh_from_db()
+        self.assertTrue(sample_category.published)
 
         url = reverse('skill:unpublish_category', args=[sample_category.slug])
-
-        self.assertTrue(sample_category.status)
 
         response = self.admin_client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         sample_category.refresh_from_db()
-        self.assertFalse(sample_category.status)
+        self.assertFalse(sample_category.published)
 
     def test_unpublish_skill_with_admin_user_successfully(self):
         sample_category = create_category(name='Backend')
         sample_skill = create_skill(category=sample_category, name='Django')
-        sample_skill.status = True
+        sample_skill.published = True
         sample_skill.save()
         sample_skill.refresh_from_db()
 
         url = reverse('skill:unpublish_skill', args=[sample_skill.slug])
 
-        self.assertTrue(sample_skill.status)
+        self.assertTrue(sample_skill.published)
 
         response = self.admin_client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         sample_skill.refresh_from_db()
-        self.assertFalse(sample_skill.status)
+        self.assertFalse(sample_skill.published)

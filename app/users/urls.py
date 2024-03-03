@@ -20,8 +20,9 @@ urlpatterns = [
     path('followings/', apis.ListMyFollowingsApiView.as_view(), name='followings'),
     path('otp/verification/', apis.OtpVerificationApiView.as_view(), name='verification'),
     path('otp/resend/', apis.ResendOtpApiView.as_view(), name='resend_otp'),
-    path('profile/<str:skill>/select/', apis.SelectSkillApiView.as_view(), name='select_skill'),
+    path('profile/<str:slug>/select/', apis.SelectSkillApiView.as_view(), name='select_skill'),
     path('profile/skills/me/', apis.MySkillsApiView.as_view(), name='my_skills'),
+    path('profile/<str:slug>/unselect/', apis.UnselectSkillApiView.as_view(), name='unselect_skill'),
 
 
 

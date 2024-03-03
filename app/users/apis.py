@@ -29,7 +29,8 @@ from core.services.users import (
     unsubscribe,
     verify_otp,
     resend_otp,
-    select_skill
+    select_skill,
+    unselect_skill
 )
 from skill.models import Skill
 from .models import (
@@ -378,11 +379,11 @@ class ResendOtpApiView(APIView):
 class SelectSkillApiView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, skill, *args, **kwargs):
+    def get(self, request, slug, *args, **kwargs):
         try:
             select_skill(
                 user=request.user,
-                skill=skill
+                slug=slug
             )
         except Exception as ex:
             raise serializers.ValidationError(
@@ -411,5 +412,18 @@ class MySkillsApiView(APIView):
         response = self.MySkillsSerializer(
             qs, many=True, context={'request': request}
         ).data
-        
+
         return Response(response, status=status.HTTP_200_OK)
+
+
+class UnselectSkillApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, slug, *args, **kwargs):
+        try:
+            unselect_skill(user=request.user, slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)

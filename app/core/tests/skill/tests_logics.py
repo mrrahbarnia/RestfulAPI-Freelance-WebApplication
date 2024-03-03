@@ -30,10 +30,10 @@ class TestSkillLogics(TestCase):
     
     def test_get_published_categories(self):
         cat1 = create_category(name='Backend Development')
-        cat1.status = True
+        cat1.published = True
         cat1.save()
         cat2 = create_category(name='UI')
-        cat2.status = True
+        cat2.published = True
         cat2.save()
 
         categories = get_published_categories(name=None)
@@ -45,10 +45,10 @@ class TestSkillLogics(TestCase):
         cat = create_category(name='Backend Development')
         empty_cat = create_category(name='Frontend Development')
         skill1 = create_skill(name='Django', category=cat)
-        skill1.status = True
+        skill1.published = True
         skill1.save()
         skill2 = create_skill(name='FastAPI', category=cat)
-        skill2.status = True
+        skill2.published = True
         skill2.save()
 
         skills = get_published_skills(category=None)
@@ -64,18 +64,18 @@ class TestSkillLogics(TestCase):
     
     def test_publish_category(self):
         sample_category = create_category(name='Backend')
-        self.assertFalse(sample_category.status)
+        self.assertFalse(sample_category.published)
 
         publish_category(slug=sample_category.slug)
         sample_category.refresh_from_db()
-        self.assertTrue(sample_category.status)
+        self.assertTrue(sample_category.published)
 
 
     def test_publish_skill(self):
         sample_category = create_category(name='Backend')
         sample_skill = create_skill(category=sample_category, name='Django')
-        self.assertFalse(sample_skill.status)
+        self.assertFalse(sample_skill.published)
 
         publish_skill(slug=sample_skill.slug)
         sample_skill.refresh_from_db()
-        self.assertTrue(sample_skill.status)
+        self.assertTrue(sample_skill.published)

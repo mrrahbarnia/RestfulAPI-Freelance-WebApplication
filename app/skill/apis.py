@@ -138,7 +138,7 @@ class CategoryApiView(APIView):
 
         class Meta:
             model = Category
-            fields = ('name', 'status', 'publish_url')
+            fields = ('name', 'published', 'publish_url')
         
         def get_publish_url(self, category):
             request = self.context.get('request')
@@ -190,21 +190,14 @@ class SkillApiView(APIView):
             help_text=f'The category name must be in this list >> {CATEGORY_CHOICES}'
         )
 
-        def validate_name(self, name):
-            if Skill.objects.filter(name=name).exists():
-                raise serializers.ValidationError(
-                    'There is a skill with the same name'
-                )
-            return name
-
 
     class OutputSkillSerializer(serializers.ModelSerializer):
         publish_url = serializers.SerializerMethodField()
 
         class Meta:
             model = Skill
-            fields = ('name', 'status', 'publish_url')
-        
+            fields = ('name', 'published', 'publish_url')
+
         def get_publish_url(self, skill):
             request = self.context.get('request')
             path = reverse('skill:skill_detail', args=[skill.slug])
@@ -220,7 +213,7 @@ class SkillApiView(APIView):
             )
         response = self.OutputSkillSerializer(qs, many=True, context={'request': request}).data
         return Response(response, status=status.HTTP_200_OK)
-    
+
     @extend_schema(
             request=InputSkillSerializer,
             responses=OutputSkillSerializer
