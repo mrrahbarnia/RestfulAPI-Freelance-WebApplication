@@ -6,9 +6,9 @@ from rest_framework import status
 
 from users.models import BaseUser
 from portfolio.models import Portfolio
-# from core.selectors.portfolio import (
-#     get_my_portfolios
-# )
+from core.services.portfolio import (
+    create_portfolio
+)
 from core.services.skills import (
     create_category,
     create_skill,
@@ -22,7 +22,7 @@ from core.services.users import (
 )
 
 PORTFOLIO_URL = reverse('portfolio:create_portfolio')
-# LIST_MY_PORTFOLIOS_URL = reverse('portfolio:my_portfolios')
+LIST_MY_PORTFOLIOS_URL = reverse('portfolio:my_portfolios')
 
 
 class TestPublicEndpoints(TestCase):
@@ -38,10 +38,10 @@ class TestPublicEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # def test_list_portfolios_unauthenticated_unsuccessfully(self):
-    #     response = self.client.get(LIST_MY_PORTFOLIOS_URL)
+    def test_list_portfolios_unauthenticated_unsuccessfully(self):
+        response = self.client.get(LIST_MY_PORTFOLIOS_URL)
 
-    #     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
 class TestPublicEndpoints(TestCase):
@@ -71,7 +71,7 @@ class TestPublicEndpoints(TestCase):
 
     # def tearDown(self) -> None:
     #     cache.delete_pattern('*')
-    
+
     def test_create_portfolio_authenticated_successfully(self):
         payload = {
             'title': 'New portfolio',
@@ -84,13 +84,21 @@ class TestPublicEndpoints(TestCase):
             Portfolio.objects.filter(title=payload['title']).exists()
         )
 
-    # def test_list_portfolios_authenticated_successfully(self):
-    #     sample_category = create_category(name='Backend Development')
-    #     sample_skill1 = create_skill(category=sample_category, name='Django')
-    #     # sample_skill2 = create_skill(category=sample_category, name='FastAPI')
+    def test_list_my_portfolios_authenticated_successfully(self):
+        create_portfolio(
+            user=self.admin_user,
+            title='Advanced RestFull API'
+        )
+        create_portfolio(
+            user=self.normal_user,
+            title='E-Learning web service'
+        )
+        create_portfolio(
+            user=self.normal_user,
+            title='E-Commerce web service'
+        )
 
-    #     select_skill(user=self.normal_user, slug=sample_skill1.slug)
+        response = self.normal_client.get(LIST_MY_PORTFOLIOS_URL)
 
-
-
-
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
