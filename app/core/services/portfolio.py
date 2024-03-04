@@ -18,5 +18,3 @@ def create_portfolio(
     portfolio.full_clean()
     portfolio.save()
     return portfolio
-
-    

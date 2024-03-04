@@ -7,6 +7,9 @@ from rest_framework import (
 )
 from drf_spectacular.utils import extend_schema
 
+from core.selectors.portfolio import (
+    get_my_portfolios
+)
 from core.services.portfolio import (
     create_portfolio,
 )
@@ -51,3 +54,24 @@ class CreatePortfolioApiView(APIView):
             )
         response = self.OutputPortfolioSerializer(portfolio).data
         return Response(response, status=status.HTTP_201_CREATED)
+
+
+class MyPortfoliosApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    class MyPortfolioOutputSerializer(serializers.ModelSerializer):
+
+        class Meta:
+            model = Portfolio
+            fields = ('title', 'description', 'cover_image')
+        
+    def get(self, request, *args, **kwargs):
+        try:
+            portfolios = get_my_portfolios(user=request.user)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        response = self.MyPortfolioOutputSerializer(portfolios, many=True).data
+        return Response(response, status=status.HTTP_200_OK)

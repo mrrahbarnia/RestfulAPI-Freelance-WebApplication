@@ -87,15 +87,22 @@ class TestPublicEndpoints(TestCase):
     def test_list_my_portfolios_authenticated_successfully(self):
         create_portfolio(
             user=self.admin_user,
-            title='Advanced RestFull API'
+            title='Advanced RestFull API',
+            description=None,
+            cover_image=None
         )
         create_portfolio(
             user=self.normal_user,
-            title='E-Learning web service'
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
         )
         create_portfolio(
             user=self.normal_user,
-            title='E-Commerce web service'
+            title='E-Commerce web service',
+            description=None,
+            cover_image=None
+
         )
 
         response = self.normal_client.get(LIST_MY_PORTFOLIOS_URL)
