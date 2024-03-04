@@ -5,9 +5,10 @@ from rest_framework.test import APIClient
 from rest_framework import status
 
 from users.models import BaseUser
-from core.selectors.portfolio import (
-    get_my_portfolios
-)
+from portfolio.models import Portfolio
+# from core.selectors.portfolio import (
+#     get_my_portfolios
+# )
 from core.services.skills import (
     create_category,
     create_skill,
@@ -20,8 +21,8 @@ from core.services.users import (
     select_skill
 )
 
-PORTFOLIO_URL = reverse('portfolio:portfolio')
-LIST_MY_PORTFOLIOS_URL = reverse('portfolio:my_portfolios')
+PORTFOLIO_URL = reverse('portfolio:create_portfolio')
+# LIST_MY_PORTFOLIOS_URL = reverse('portfolio:my_portfolios')
 
 
 class TestPublicEndpoints(TestCase):
@@ -76,9 +77,12 @@ class TestPublicEndpoints(TestCase):
             'title': 'New portfolio',
             'description': 'This is a very professional portfolio.',
         }
-        response = self.client.post(PORTFOLIO_URL, payload, format='json')
+        response = self.normal_client.post(PORTFOLIO_URL, payload, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            Portfolio.objects.filter(title=payload['title']).exists()
+        )
 
     # def test_list_portfolios_authenticated_successfully(self):
     #     sample_category = create_category(name='Backend Development')
