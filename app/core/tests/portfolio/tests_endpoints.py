@@ -9,16 +9,9 @@ from portfolio.models import Portfolio
 from core.services.portfolio import (
     create_portfolio
 )
-from core.services.skills import (
-    create_category,
-    create_skill,
-    publish_category,
-    publish_skill
-)
 from core.services.users import (
     register,
     create_profile,
-    select_skill
 )
 
 PORTFOLIO_URL = reverse('portfolio:create_portfolio')
@@ -40,6 +33,18 @@ class TestPublicEndpoints(TestCase):
 
     def test_list_portfolios_unauthenticated_unsuccessfully(self):
         response = self.client.get(LIST_MY_PORTFOLIOS_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_retrieve_portfolio_unauthenticated_unsuccessfully(self):
+        url = reverse('portfolio:portfolio_detail', args=['test'])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_portfolio_unauthenticated_unsuccessfully(self):
+        url = reverse('portfolio:portfolio_detail', args=['test'])
+        response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
@@ -109,3 +114,47 @@ class TestPublicEndpoints(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
+
+    def test_retrieve_portfolio_authenticated_successfully(self):
+        sample_portfolio = create_portfolio(
+            user=self.normal_user,
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
+        )
+        url = reverse('portfolio:portfolio_detail', args=[sample_portfolio.slug])
+        response = self.normal_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(sample_portfolio.views, 1)
+
+    def test_delete_another_user_portfolio_unsuccessfully(self):
+        sample_portfolio1 = create_portfolio(
+            user=self.normal_user,
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
+        )
+        url = reverse('portfolio:portfolio_detail', args=[sample_portfolio1.slug])
+        response = self.admin_client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(
+            Portfolio.objects.filter(title=sample_portfolio1.title).exists()
+        )
+
+
+    def test_delete_my_portfolio_successfully(self):
+        sample_portfolio1 = create_portfolio(
+            user=self.normal_user,
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
+        )
+        url = reverse('portfolio:portfolio_detail', args=[sample_portfolio1.slug])
+        response = self.normal_client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(
+            Portfolio.objects.filter(title=sample_portfolio1.title).exists()
+        )
