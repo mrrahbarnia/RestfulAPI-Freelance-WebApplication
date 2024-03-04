@@ -145,6 +145,7 @@ def verify_otp(*, otp:int) -> None:
 def select_skill(*, user:BaseUser, slug:str) -> None:
     profile = Profile.objects.get(user=user)
     skill = Skill.objects.get(slug=slug)
+    cache.delete(f'{user}_skills')
     if skill.published:
         profile.skills.add(skill)
         profile.save()
@@ -157,6 +158,7 @@ def select_skill(*, user:BaseUser, slug:str) -> None:
 def unselect_skill(*, user:BaseUser, slug:str) -> None:
     profile = Profile.objects.get(user=user)
     user_skills = ProfileSkill.objects.filter(profile_id=profile).filter(skill_id__slug=slug)
+    cache.delete(f'{user}_skills')
     if user_skills:
         user_skills.delete()
     else:

@@ -37,6 +37,14 @@ def my_followings(*, profile:Profile) -> QuerySet[Subscription]:
         return followings
 
 def my_skills(*, user:BaseUser) -> QuerySet[Skill]:
-    # TODO: caching
-    my_skills = Skill.objects.filter(skill_profile__user=user)
-    return my_skills
+    cached_skills = cache.get(f'{user}_skills')
+    if cached_skills:
+        return cached_skills
+    else:
+        skills = Skill.objects.filter(skill_profile__user=user).only('name', 'slug')
+        cache.set(
+            key=f'{user}_skills',
+            value=skills,
+            timeout=None
+        )
+        return skills

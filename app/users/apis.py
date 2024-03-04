@@ -249,9 +249,9 @@ class ListFreelancersApiView(APIView):
             )
 
         def get_absolute_url(self, profile):
-                request = self.context.get('request')
-                path = reverse('users:profile_detail', args=[profile.uuid])
-                return request.build_absolute_uri(path)
+            request = self.context.get('request')
+            path = reverse('users:profile_detail', args=[profile.uuid])
+            return request.build_absolute_uri(path)
 
     @extend_schema(responses=OutputFreelancerSerializer)
     def get(self, request, *args, **kwargs):
@@ -397,10 +397,16 @@ class MySkillsApiView(APIView):
 
 
     class MySkillsSerializer(serializers.ModelSerializer):
+        unselect_url = serializers.SerializerMethodField()
 
         class Meta:
             model = Skill
-            fields = ('name', )
+            fields = ('name', 'unselect_url')
+        
+        def get_unselect_url(self, skill):
+            request = self.context.get('request')
+            path = reverse('users:unselect_skill', args=[skill.slug])
+            return request.build_absolute_uri(path)
 
     def get(self, request, *args, **kwargs):
         try:

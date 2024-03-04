@@ -97,17 +97,17 @@ class BaseUser(TimeStamp, AbstractBaseUser, PermissionsMixin):
 
 class Profile(models.Model):
 
-    PLAN_CHOICES = [
-    ('FREE', 'Free'),
-    ('BRONZE', 'Bronze'),
-    ('SILVER', 'Silver'),
-    ('GOLD', 'Gold')
-    ]
 
-    SEX = [
-        ('M', 'Male'),
-        ('F', 'Female')
-    ]
+    class PlanChoices(models.TextChoices):
+        FREE = 'FR', 'Free'
+        BRONZE = 'BR', 'Bronze'
+        SILVER = 'SL', 'Silver'
+        GOLD = 'GL', 'Gold'
+
+
+    class SexChoices(models.TextChoices):
+        MALE = 'M', 'Male'
+        FEMALE = 'F', 'Female'
 
     user = models.OneToOneField(
         BaseUser, on_delete=models.CASCADE, related_name='profile', db_index=True
@@ -125,13 +125,13 @@ class Profile(models.Model):
         validators=[age_validator], null=True, blank=True
     )
     plan_type = models.CharField(
-        max_length=6, choices=PLAN_CHOICES, default='FREE'
+        max_length=2, choices=PlanChoices.choices, default='FR'
     )
     balance = models.DecimalField(
         max_digits=20, decimal_places=3, default=0
     )
     score = models.PositiveIntegerField(default=0)
-    sex = models.CharField(max_length=2, choices=SEX, null=True, blank=True)
+    sex = models.CharField(max_length=1, choices=SexChoices.choices, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
     skills = models.ManyToManyField(
