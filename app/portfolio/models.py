@@ -28,6 +28,7 @@ class Portfolio(TimeStamp):
         Skill, related_name='skill_portfolio', through='PortfolioSkill'
     )
     likes = models.PositiveIntegerField(default=0)
+    published = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f'{self.profile.user} >> {self.title}'
@@ -46,6 +47,7 @@ class PortfolioComment(TimeStamp):
     portfolio = models.ForeignKey(
         Portfolio, on_delete=models.CASCADE, related_name='portfolio_comment'
     )
+    comment = models.CharField(max_length=1000)
 
     def __str__(self) -> str:
         return self.portfolio

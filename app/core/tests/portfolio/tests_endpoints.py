@@ -7,7 +7,9 @@ from rest_framework import status
 from users.models import BaseUser
 from portfolio.models import Portfolio
 from core.services.portfolio import (
-    create_portfolio
+    create_portfolio,
+    publish_portfolio,
+    create_comment,
 )
 from core.services.users import (
     register,
@@ -16,6 +18,7 @@ from core.services.users import (
 
 PORTFOLIO_URL = reverse('portfolio:create_portfolio')
 LIST_MY_PORTFOLIOS_URL = reverse('portfolio:my_portfolios')
+COMMENT_URL = reverse('portfolio:comment')
 
 
 class TestPublicEndpoints(TestCase):
@@ -47,6 +50,25 @@ class TestPublicEndpoints(TestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_list_comments_with_unauthenticated_user_unsuccessfully(self):
+        response = self.client.get(COMMENT_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_publish_portfolio_with_unauthenticated_unsuccessfully(self):
+        url = reverse('portfolio:publish_portfolio', args=['test'])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # def test_create_portfolio_comment_unauthenticated_unsuccessfully(self):
+    #     response = self.client.post(COMMENT_URL, {})
+
+    #     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # def test_delete_portfolio_comment_unauthenticated_unsuccessfully(self):
+    #     pass
 
 
 class TestPublicEndpoints(TestCase):
@@ -159,3 +181,77 @@ class TestPublicEndpoints(TestCase):
         self.assertFalse(
             Portfolio.objects.filter(title=sample_portfolio1.title).exists()
         )
+
+    def test_list_comments_by_normal_user_unsuccessfully(self):
+        response = self.normal_client.get(COMMENT_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_comments_only_by_admin_user_successfully(self):
+        portfolio1 = create_portfolio(
+            user=self.normal_client,
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
+        )
+
+        create_comment(
+            user=self.admin_user,
+            portfolio=portfolio1
+        )
+        create_comment(
+            user=self.normal_user,
+            portfolio=portfolio1
+        )
+        response = self.admin_client.get(COMMENT_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+
+    def test_publish_portfolio_with_normal_user_unsuccessfully(self):
+        portfolio1 = create_portfolio(
+            user=self.normal_client,
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
+        )
+        url = reverse('portfolio:publish_portfolio', args=[portfolio1.slug])
+        response = self.normal_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_publish_non_existing_portfolio_unsuccessfully(self):
+        url = reverse('portfolio:publish_portfolio', args=['wrong-slug'])
+        response = self.admin_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_publish_portfolio_with_admin_user_successfully(self):
+        portfolio1 = create_portfolio(
+            user=self.normal_client,
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
+        )
+        url = reverse('portfolio:publish_portfolio', args=[portfolio1.slug])
+        response = self.admin_client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(portfolio1.published)
+
+    # def test_create_portfolio_comment_authenticated_successfully(self):
+    #     pass
+
+    # def test_delete_another_portfolio_comment_authenticated_unsuccessfully(self):
+    #     """
+    #     Test deleting a portfolio which belongs to another user unsuccessfully.
+    #     """
+    #     pass
+
+    # def test_delete_my_portfolio_comment_authenticated_successfully(self):
+    #     """
+    #     Test deleting a portfolio which belongs
+    #     to myself another user unsuccessfully.
+    #     """
+    #     pass
+
