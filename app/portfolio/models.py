@@ -19,7 +19,7 @@ class Portfolio(TimeStamp):
     profile = models.ForeignKey(
         Profile, on_delete=models.CASCADE, related_name='portfolio'
     )
-    title = models.CharField(max_length=250)
+    title = models.CharField(max_length=250, unique=True)
     slug = models.CharField(max_length=None, db_index=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
@@ -30,7 +30,7 @@ class Portfolio(TimeStamp):
     likes = models.PositiveIntegerField(default=0)
 
     def __str__(self) -> str:
-        return f'{self.profile} >> {self.title}'
+        return f'{self.profile.user} >> {self.title}'
 
 
 class PortfolioImage(TimeStamp):
