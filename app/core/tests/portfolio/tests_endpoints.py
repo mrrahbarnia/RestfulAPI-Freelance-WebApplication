@@ -189,7 +189,7 @@ class TestPublicEndpoints(TestCase):
 
     def test_list_comments_only_by_admin_user_successfully(self):
         portfolio1 = create_portfolio(
-            user=self.normal_client,
+            user=self.normal_user,
             title='E-Learning web service',
             description=None,
             cover_image=None
@@ -197,11 +197,13 @@ class TestPublicEndpoints(TestCase):
 
         create_comment(
             user=self.admin_user,
-            portfolio=portfolio1
+            portfolio=portfolio1,
+            comment='Example comment1'
         )
         create_comment(
             user=self.normal_user,
-            portfolio=portfolio1
+            portfolio=portfolio1,
+            comment='Example comment2'
         )
         response = self.admin_client.get(COMMENT_URL)
 
@@ -210,7 +212,7 @@ class TestPublicEndpoints(TestCase):
 
     def test_publish_portfolio_with_normal_user_unsuccessfully(self):
         portfolio1 = create_portfolio(
-            user=self.normal_client,
+            user=self.normal_user,
             title='E-Learning web service',
             description=None,
             cover_image=None
@@ -228,13 +230,14 @@ class TestPublicEndpoints(TestCase):
 
     def test_publish_portfolio_with_admin_user_successfully(self):
         portfolio1 = create_portfolio(
-            user=self.normal_client,
+            user=self.normal_user,
             title='E-Learning web service',
             description=None,
             cover_image=None
         )
         url = reverse('portfolio:publish_portfolio', args=[portfolio1.slug])
         response = self.admin_client.get(url)
+        portfolio1.refresh_from_db()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(portfolio1.published)

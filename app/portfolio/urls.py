@@ -8,7 +8,7 @@ urlpatterns = [
     path('create/', apis.CreatePortfolioApiView.as_view(), name='create_portfolio'),
     path('me/', apis.MyPortfoliosApiView.as_view(), name='my_portfolios'),
     path('<str:slug>/', apis.PortfolioDetailApiView.as_view(), name='portfolio_detail'),
-    # path('comment/', apis.CommentApiView.as_view(), name='comment'),
+    path('comment/all/', apis.CommentApiView.as_view(), name='comment'),
     # path('comment/<str:pk>/', apis.CommentApiView.as_view(), name='comment_detail'),
-    # path('<str:slug>/publish/', apis.PublishPortfolioApiView.as_view(), name='publish_portfolio')
+    path('<str:slug>/publish/', apis.PublishPortfolioApiView.as_view(), name='publish_portfolio')
 ]

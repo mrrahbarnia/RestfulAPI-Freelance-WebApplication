@@ -181,16 +181,17 @@ class TestPrivateSkillEndpoints(TestCase):
         sample_category.published = True
         sample_category.save()
         sample_category.refresh_from_db()
-
-        payload = {
-            'name': 'FastAPI',
-            'category': 'Backend'
-        }
         cache.set(
             key='category_choices',
             value=list(Category.objects.filter(published=True).values_list('name', flat=True)),
             timeout=None
         )
+
+        payload = {
+            'name': 'FastAPI',
+            'category': 'Backend'
+        }
+
         response = self.admin_client.post(SKILL_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

@@ -2,7 +2,10 @@ from django.utils.text import slugify
 from django.db.models import F
 from rest_framework import serializers
 
-from portfolio.models import Portfolio
+from portfolio.models import (
+    Portfolio,
+    PortfolioComment
+)
 from users.models import BaseUser
 
 def create_portfolio(
@@ -34,3 +37,21 @@ def get_portfolio_for_delete(*, slug:str) -> None:
         raise serializers.ValidationError(
             'There is no portfolio with the provided slug.'
         )
+
+def publish_portfolio(*, slug:str) -> None:
+    try:
+        portfolio = Portfolio.objects.get(slug=slug)
+        portfolio.published = True
+        portfolio.save()
+        return portfolio
+    except Portfolio.DoesNotExist:
+        raise serializers.ValidationError(
+            'There is no portfolio with the provided slug.'
+        )
+
+def create_comment(
+        *, user:BaseUser, portfolio:Portfolio, comment:str
+) -> PortfolioComment:
+    return PortfolioComment.objects.create(
+        user=user, portfolio=portfolio, comment=comment
+    )

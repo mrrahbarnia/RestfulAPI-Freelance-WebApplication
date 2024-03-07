@@ -27,7 +27,7 @@ from .models import (
     Skill,
     Category
 )
-from .permission import IsAdmin
+from core.permission import IsAdmin
 
 
 class PubCategoryApiView(APIView):
@@ -185,10 +185,16 @@ class SkillApiView(APIView):
         CATEGORY_CHOICES = category_choices()
 
         name = serializers.CharField(max_length=250)
-        category = serializers.ChoiceField(
-            choices=CATEGORY_CHOICES,
+        category = serializers.CharField(
             help_text=f'The category name must be in this list >> {CATEGORY_CHOICES}'
         )
+
+        def validate_category(self, category):
+            if not Category.objects.filter(name=category).exists():
+                raise serializers.ValidationError(
+                    f'The provided category name must be in {self.CATEGORY_CHOICES}.'
+                )
+            return category
 
 
     class OutputSkillSerializer(serializers.ModelSerializer):

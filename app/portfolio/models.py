@@ -5,7 +5,10 @@ from django.db import models
 
 from skill.models import Skill
 from core.timestamp import TimeStamp
-from users.models import Profile
+from users.models import (
+    Profile,
+    BaseUser
+)
 
 def portfolio_cover_img_path(instance, file_name):
     """Generating unique path for portfolio cover images."""
@@ -45,12 +48,15 @@ class PortfolioImage(TimeStamp):
 
 class PortfolioComment(TimeStamp):
     portfolio = models.ForeignKey(
-        Portfolio, on_delete=models.CASCADE, related_name='portfolio_comment'
+        Portfolio, on_delete=models.CASCADE, related_name='portfolio_portfolio_comment'
+    )
+    user = models.ForeignKey(
+        BaseUser, on_delete=models.CASCADE, related_name='user_portfolio_comment'
     )
     comment = models.CharField(max_length=1000)
 
     def __str__(self) -> str:
-        return self.portfolio
+        return self.comment
 
 
 class PortfolioSkill(models.Model):

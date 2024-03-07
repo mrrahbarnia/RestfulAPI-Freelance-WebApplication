@@ -8,17 +8,21 @@ from rest_framework import (
 from drf_spectacular.utils import extend_schema
 
 from core.selectors.portfolio import (
-    get_my_portfolios
+    get_my_portfolios,
+    list_comments
 )
 from core.services.portfolio import (
     create_portfolio,
     get_portfolio,
-    get_portfolio_for_delete
+    get_portfolio_for_delete,
+    publish_portfolio
 )
 from portfolio.models import (
-    Portfolio
+    Portfolio,
+    PortfolioComment
 )
 from .permission import IsOwnerOrReadOnly
+from core.permission import IsAdmin
 
 
 class CreatePortfolioApiView(APIView):
@@ -114,3 +118,40 @@ class PortfolioDetailApiView(APIView):
                 f'Database Error >> {ex}'
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentApiView(APIView):
+    permission_classes = [IsAdmin]
+
+    class CommentOutputSerializer(serializers.ModelSerializer):
+        user = serializers.CharField(source='user.phone_number')
+        portfolio = serializers.CharField(source='portfolio.title')
+
+        class Meta:
+            model = PortfolioComment
+            fields = ('comment', 'user', 'portfolio')
+
+    @extend_schema(responses=CommentOutputSerializer)
+    def get(self, request, *args, **kwargs):
+        try:
+            comments = list_comments()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        response = self.CommentOutputSerializer(comments, many=True).data
+        return Response(response, status=status.HTTP_200_OK)
+
+
+class PublishPortfolioApiView(APIView):
+    permission_classes = [IsAdmin]
+
+    def get(self, request, slug, *args, **kwargs):
+        try:
+            publish_portfolio(slug=slug)
+        except Exception as ex:
+            raise serializers.ValidationError(
+                f'Database Error >> {ex}'
+            )
+        return Response(status=status.HTTP_200_OK)
+
