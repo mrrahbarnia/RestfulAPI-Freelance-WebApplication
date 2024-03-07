@@ -11,7 +11,6 @@ from portfolio.models import (
 )
 from core.services.portfolio import (
     create_portfolio,
-    publish_portfolio,
     create_comment,
 )
 from core.services.users import (
@@ -22,7 +21,6 @@ from core.services.users import (
 PORTFOLIO_URL = reverse('portfolio:create_portfolio')
 LIST_MY_PORTFOLIOS_URL = reverse('portfolio:my_portfolios')
 COMMENT_URL = reverse('portfolio:comment')
-
 
 class TestPublicEndpoints(TestCase):
     
@@ -58,17 +56,18 @@ class TestPublicEndpoints(TestCase):
         response = self.client.get(COMMENT_URL)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-    
+
     def test_publish_portfolio_with_unauthenticated_unsuccessfully(self):
         url = reverse('portfolio:publish_portfolio', args=['test'])
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # def test_create_portfolio_comment_unauthenticated_unsuccessfully(self):
-    #     response = self.client.post(COMMENT_URL, {})
+    def test_create_portfolio_comment_unauthenticated_unsuccessfully(self):
+        url = reverse('portfolio:create_comment', args=['test'])
+        response = self.client.post(url, {})
 
-    #     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_delete_portfolio_comment_unauthenticated_unsuccessfully(self):
         url = reverse('portfolio:delete_comment', args=['test'])
@@ -248,8 +247,21 @@ class TestPublicEndpoints(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(portfolio1.published)
 
-    # def test_create_portfolio_comment_authenticated_successfully(self):
-    #     pass
+    def test_create_portfolio_comment_authenticated_successfully(self):
+        sample_portfolio = create_portfolio(
+            user=self.normal_user,
+            title='E-Learning web service',
+            description=None,
+            cover_image=None
+        )
+        url = reverse('portfolio:create_comment', args=[sample_portfolio.slug])
+        payload = {'comment': 'The best portfolio ever...'}
+        response = self.admin_client.post(url, payload, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(PortfolioComment.objects.filter(
+            portfolio=sample_portfolio, user=self.admin_user
+        ).exists())
 
     def test_delete_another_portfolio_comment_authenticated_unsuccessfully(self):
         """
