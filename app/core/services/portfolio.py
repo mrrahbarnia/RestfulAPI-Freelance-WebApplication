@@ -55,3 +55,12 @@ def create_comment(
     return PortfolioComment.objects.create(
         user=user, portfolio=portfolio, comment=comment
     )
+
+def get_portfolio_comment_for_delete(*, pk:int) -> None:
+    try:
+        comment = PortfolioComment.objects.get(pk=pk)
+        return comment
+    except PortfolioComment.DoesNotExist:
+        raise serializers.ValidationError(
+            'There is no comment with the provided primary key.'
+        )

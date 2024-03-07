@@ -11,3 +11,13 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return True
 
         return obj.profile.user == request.user
+
+
+class IsOwner(permissions.BasePermission):
+    """
+    This custom permission set for deleting
+    portfolio's comments only by their owners.
+    """
+    def has_object_permission(self, request, view, obj):
+
+        return obj.user == request.user

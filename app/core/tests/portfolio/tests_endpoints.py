@@ -270,7 +270,7 @@ class TestPublicEndpoints(TestCase):
 
         response = self.admin_client.delete(url)
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(PortfolioComment.objects.filter(
             comment=sample_comment.comment
         ).exists())

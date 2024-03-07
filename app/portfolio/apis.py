@@ -15,13 +15,17 @@ from core.services.portfolio import (
     create_portfolio,
     get_portfolio,
     get_portfolio_for_delete,
-    publish_portfolio
+    publish_portfolio,
+    get_portfolio_comment_for_delete
 )
 from portfolio.models import (
     Portfolio,
     PortfolioComment
 )
-from .permission import IsOwnerOrReadOnly
+from .permission import (
+    IsOwnerOrReadOnly,
+    IsOwner
+)
 from core.permission import IsAdmin
 
 
@@ -155,3 +159,17 @@ class PublishPortfolioApiView(APIView):
             )
         return Response(status=status.HTTP_200_OK)
 
+
+class DeleteCommentApiView(APIView):
+    permission_classes = [IsOwner]
+
+    def delete(self, request, pk, *args, **kwargs):
+        try:
+            comment = get_portfolio_comment_for_delete(pk=pk)
+            self.check_object_permissions(obj=comment, request=request)
+            comment.delete()
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'detail': f'{ex}'}
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
