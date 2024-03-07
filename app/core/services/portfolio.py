@@ -50,8 +50,14 @@ def publish_portfolio(*, slug:str) -> None:
         )
 
 def create_comment(
-        *, user:BaseUser, portfolio:Portfolio, comment:str
+        *, user:BaseUser, slug:str, comment:str
 ) -> PortfolioComment:
+    try:
+        portfolio = Portfolio.objects.get(slug=slug)
+    except Portfolio.DoesNotExist:
+        raise serializers.ValidationError(
+            'There is no portfolio with the provided slug.'
+        )
     return PortfolioComment.objects.create(
         user=user, portfolio=portfolio, comment=comment
     )

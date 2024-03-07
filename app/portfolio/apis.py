@@ -16,7 +16,8 @@ from core.services.portfolio import (
     get_portfolio,
     get_portfolio_for_delete,
     publish_portfolio,
-    get_portfolio_comment_for_delete
+    get_portfolio_comment_for_delete,
+    create_comment
 )
 from portfolio.models import (
     Portfolio,
@@ -173,3 +174,32 @@ class DeleteCommentApiView(APIView):
                 {'detail': f'{ex}'}
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CreateCommentApiView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+
+    class CommentSerializer(serializers.Serializer):
+        comment = serializers.CharField(max_length=1000)
+
+
+    @extend_schema(
+            request=CommentSerializer,
+            responses=CommentSerializer
+    )
+    def post(self, request, portfolio_slug, *args, **kwargs):
+        serializer = self.CommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            comment = create_comment(
+                user=request.user,
+                slug=portfolio_slug,
+                comment=serializer.validated_data.get('comment')
+            )
+        except Exception as ex:
+            raise serializers.ValidationError(
+                {'detail': f'{ex}'}
+            )
+        response = self.CommentSerializer(comment).data
+        return Response(response, status=status.HTTP_201_CREATED)

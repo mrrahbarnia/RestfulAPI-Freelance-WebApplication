@@ -202,12 +202,12 @@ class TestPublicEndpoints(TestCase):
 
         create_comment(
             user=self.admin_user,
-            portfolio=portfolio1,
+            slug=portfolio1.slug,
             comment='Example comment1'
         )
         create_comment(
             user=self.normal_user,
-            portfolio=portfolio1,
+            slug=portfolio1.slug,
             comment='Example comment2'
         )
         response = self.admin_client.get(COMMENT_URL)
@@ -275,7 +275,7 @@ class TestPublicEndpoints(TestCase):
         )
         sample_comment = create_comment(
             user=self.normal_user,
-            portfolio=portfolio1,
+            slug=portfolio1.slug,
             comment='Example comment1'
         )
         url = reverse('portfolio:delete_comment', args=[sample_comment.pk])
@@ -300,7 +300,7 @@ class TestPublicEndpoints(TestCase):
         )
         sample_comment = create_comment(
             user=self.normal_user,
-            portfolio=portfolio1,
+            slug=portfolio1.slug,
             comment='Example comment1'
         )
         url = reverse('portfolio:delete_comment', args=[sample_comment.pk])
